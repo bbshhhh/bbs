@@ -1,5 +1,8 @@
 package com.ccnu.bbs.repository;
 
 
-public interface CollectRepository {
+import com.ccnu.bbs.entity.Collect;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface CollectRepository extends JpaRepository<Collect, Integer> {
 }

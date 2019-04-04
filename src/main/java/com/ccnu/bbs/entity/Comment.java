@@ -4,6 +4,7 @@ import lombok.Data;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import java.util.Date;
 
 @Data
 @Entity
@@ -20,4 +21,6 @@ public class Comment {
     private String commentContent;
     /** 评论点赞数. */
     private Integer commentLikeNum;
+    /** 评论时间. */
+    private Date commentTime;
 }

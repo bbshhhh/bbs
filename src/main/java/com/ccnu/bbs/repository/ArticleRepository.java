@@ -20,14 +20,15 @@ public interface ArticleRepository extends JpaRepository<Article, BigInteger> {
     Page<Article> findUserArticle(String userId, Pageable pageable);
 
     // 查看被某位用户收藏的帖子
-    @Query("select a from Article a, Collect c where " +
+    @Query("select a from Article a, com.ccnu.bbs.entity.Collect c where " +
             "a.articleId = c.collectArticleId and c.collectUserId = ?1 order by a.articleCreateTime desc ")
     Page<Article> findUserCollect(String userId, Pageable pageable);
 
     // 查看被某位用户点赞的帖子
-    @Query("select a from Article a, Like l where " +
+    @Query("select a from Article a, com.ccnu.bbs.entity.Like l where " +
             "a.articleId = l.likeArticleId and l.likeUserId = ?1 order by a.articleCreateTime desc ")
     Page<Article> findUserLike(String userId, Pageable pageable);
+
 
     @Transactional
     void deleteByArticleId(String articleId);

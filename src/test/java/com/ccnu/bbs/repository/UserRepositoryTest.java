@@ -31,4 +31,19 @@ public class UserRepositoryTest {
         userPage.forEach(System.out::println);
         Assert.assertNotEquals(0, userPage.getTotalElements());
     }
+
+    @Test
+    public void findCollectUserTest() {
+        userRepository.findCollectUser("1", PageRequest.of(0, 2)).forEach(System.out::println);
+    }
+
+    @Test
+    public void findLikeArticleUserTest() {
+        userRepository.findLikeArticleUser("1", PageRequest.of(0, 2)).forEach(System.out::println);
+    }
+
+    @Test
+    public void findLikeCommentUserTest() {
+        userRepository.findLikeCommentUser("123", PageRequest.of(0, 2)).forEach(System.out::println);
+    }
 }

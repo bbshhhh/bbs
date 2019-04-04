@@ -1,5 +1,19 @@
 package com.ccnu.bbs.repository;
 
 
-public interface ReplyRepository {
+import com.ccnu.bbs.entity.Reply;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+public interface ReplyRepository extends JpaRepository<Reply, String> {
+
+    // 查看某个评论的回复(按照回复时间升序排列)
+    @Query("select r from Reply r where r.replyCommentId = ?1 order by r.replyTime asc")
+    Page<Reply> findCommentReply(String commentId, Pageable pageable);
+
+    // 查看某个用户的回复(按照恢复时间降序排列)
+    @Query("select r from Reply r where r.replyUserId = ?1 order by r.replyTime desc")
+    Page<Reply> findUserReply(String userId, Pageable pageable);
 }

@@ -26,6 +26,16 @@ public class ArticleRepositoryTest {
     }
 
     @Test
+    public void findUserCollectTest() {
+        articleRepository.findUserCollect("123", PageRequest.of(1, 1)).forEach(System.out::println);
+    }
+
+    @Test
+    public void findUserLikeTest() {
+        articleRepository.findUserLike("123", PageRequest.of(0, 1)).forEach(System.out::println);
+    }
+
+    @Test
     public void deleteByIdTest(){
        articleRepository.deleteByArticleId("3");
     }
