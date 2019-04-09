@@ -1,5 +1,7 @@
 package com.ccnu.bbs.utils;
 
+import org.apache.commons.codec.digest.DigestUtils;
+
 import java.util.Random;
 
 public class KeyUtil {
@@ -14,5 +16,11 @@ public class KeyUtil {
         Integer number = random.nextInt(900000) + 100000;
 
         return  System.currentTimeMillis() + String.valueOf(number);
+    }
+
+    public static synchronized String getSessionId(String key) {
+        String sessionId = DigestUtils.md5Hex(key);
+        System.out.println("MD5加密后的sessionId为：" + sessionId);
+        return sessionId;
     }
 }

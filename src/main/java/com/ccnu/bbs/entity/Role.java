@@ -4,10 +4,11 @@ import lombok.Data;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import java.io.Serializable;
 
 @Data
 @Entity
-public class Role {
+public class Role implements Serializable {
 
     /** 身份id. */
     @Id

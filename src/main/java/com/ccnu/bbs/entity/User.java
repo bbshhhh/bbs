@@ -4,11 +4,12 @@ import lombok.Data;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import java.io.Serializable;
 import java.util.Date;
 
 @Data
 @Entity
-public class User {
+public class User implements Serializable {
 
     /** 用户id. */
     @Id

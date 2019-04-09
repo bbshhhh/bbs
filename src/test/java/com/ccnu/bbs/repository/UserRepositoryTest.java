@@ -19,6 +19,12 @@ public class UserRepositoryTest {
     private UserRepository userRepository;
 
     @Test
+    public void findByUserIdTest(){
+        User user = userRepository.findByUserId("123");
+        Assert.assertNotNull(user);
+    }
+
+    @Test
     public void findFollowerTest(){
         Page<User> userPage = userRepository.findFollower("456", PageRequest.of(1, 1));
         userPage.forEach(System.out::println);

@@ -8,6 +8,9 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface UserRepository extends JpaRepository<User, String> {
 
+    // 根据用户id查找用户
+    User findByUserId(String userId);
+
     // 查看某用户的粉丝
     @Query("select u from User u, com.ccnu.bbs.entity.Attention a where " +
             "u.userId = a.attentionFollowerId and a.attentionUserId = ?1")
