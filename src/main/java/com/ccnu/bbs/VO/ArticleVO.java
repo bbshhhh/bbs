@@ -31,4 +31,6 @@ public class ArticleVO {
     private Date articleCreateTime;
     /** 帖子关键词. */
     private List<String> keywords;
+    /** 帖子图片. */
+    private List<String> articleImages;
 }

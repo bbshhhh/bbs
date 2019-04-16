@@ -55,6 +55,12 @@
             <artifactId>weixin-java-miniapp</artifactId>
             <version>3.3.0</version>
         </dependency>
+        <!--七牛云SDK-->
+        <dependency>
+            <groupId>com.qiniu</groupId>
+            <artifactId>qiniu-java-sdk</artifactId>
+            <version>[7.2.0, 7.2.99]</version>
+        </dependency>
         <!--MD5加密-->
         <dependency>
             <groupId>org.apache.commons</groupId>

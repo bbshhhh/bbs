@@ -1,6 +1,5 @@
 package com.ccnu.bbs.service.Impl;
 
-import com.ccnu.bbs.VO.ArticleVO;
 import com.ccnu.bbs.entity.Article;
 import org.junit.Assert;
 import org.junit.Test;
@@ -21,7 +20,7 @@ public class ArticleServiceImplTest {
 
     @Test
     public void listArticle() {
-        Page<ArticleVO> res = articleService.allArticle(PageRequest.of(0, 3));
+        Page<Article> res = articleService.allArticle(PageRequest.of(0, 3));
         Assert.assertNotEquals(0, res.getSize());
     }
 }

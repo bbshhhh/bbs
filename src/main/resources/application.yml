@@ -11,7 +11,7 @@ spring:
           auto: update
         dialect: org.hibernate.dialect.MySQL5InnoDBDialect
     show-sql: true
-  ##默认密码为空
+  ##redis配置，默认密码为空
   redis:
     host: localhost
     # Redis服务器连接端口
@@ -28,13 +28,21 @@ spring:
     timeout: 5000
     #默认是索引为0的数据库
     database: 0
+#  json格式化
   jackson:
     default-property-inclusion: non_null
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8
+#微信小程序配置
 wechat:
   appId: wxf2e2bcf3a3a02033
   appSecret: cd33a6180d27b3d8cfab55333d068bb8
+#七牛云配置
+qiniu:
+  accessKey: xCz0OKEZj4Xz0cWyF-pKwxgL8qLAeJwgDqOZTp3c
+  secretKey: 2rw9fk61IK5J2jpB52E1coG8wrjjQcYywkA5G4u8
+  bucket: Image
+  path: http://img.ccnunercel.cn
 server:
   servlet:
     context-path: /bbs

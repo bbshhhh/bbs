@@ -20,14 +20,16 @@ public class Article implements Serializable {
     private String articleTitle;
     /** 帖子内容. */
     private String articleContent;
+    /** 帖子图片. */
+    private String articleImg;
     /** 帖子浏览次数. */
-    private Integer articleViewNum;
+    private Integer articleViewNum = 0;
     /** 帖子评论次数. */
-    private Integer articleCommentNum;
+    private Integer articleCommentNum = 0;
     /** 帖子热度指数. */
-    private Double articleHotNum;
+    private Double articleHotNum = 0.0;
     /** 帖子点赞次数. */
-    private Integer articleLikeNum;
+    private Integer articleLikeNum = 0;
     /** 帖子发表时间. */
     private Date articleCreateTime;
 }

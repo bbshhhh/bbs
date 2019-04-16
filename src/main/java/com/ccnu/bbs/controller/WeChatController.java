@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
 @RestController
@@ -62,12 +63,15 @@ public class WeChatController {
             // 6.生成加密的sessionId;
             sessionId = KeyUtil.getSessionId(sessionKey+openId+System.currentTimeMillis());
             // 7.存入redis中
-            redisTemplate.opsForValue().set("sessionId::" + sessionId, session,30, TimeUnit.MINUTES);
-            redisTemplate.opsForValue().set("openId::" + openId, "sessionId::" + sessionId, 30, TimeUnit.MINUTES);
+            redisTemplate.opsForValue().set("sessionId::" + sessionId, session,30, TimeUnit.DAYS);
+            redisTemplate.opsForValue().set("openId::" + openId, "sessionId::" + sessionId, 30, TimeUnit.DAYS);
         }catch (WxErrorException e){
             log.error(e.getMessage(), e);
             return ResultVOUtil.error(e.getError().getErrorCode(), e.getError().getErrorMsg());
         }
+        // 8.返回第三方sessionId交由客户端保存
+        HashMap<String, String> map = new HashMap();
+        map.put("sessionId", sessionId);
         return ResultVOUtil.success(sessionId);
     }
 
