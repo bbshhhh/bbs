@@ -2,11 +2,11 @@ package com.ccnu.bbs.controller;
 
 import cn.binarywang.wx.miniapp.api.WxMaService;
 import cn.binarywang.wx.miniapp.bean.WxMaJscode2SessionResult;
+import cn.binarywang.wx.miniapp.bean.WxMaUserInfo;
 import com.ccnu.bbs.VO.ResultVO;
 import com.ccnu.bbs.entity.User;
 import com.ccnu.bbs.enums.ResultEnum;
 import com.ccnu.bbs.service.Impl.UserServiceImpl;
-import com.ccnu.bbs.service.UserService;
 import com.ccnu.bbs.utils.KeyUtil;
 import com.ccnu.bbs.utils.ResultVOUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
 
 @RestController
@@ -27,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 public class WeChatController {
 
     @Autowired
-    private RedisTemplate<Serializable, Object> redisTemplate;
+    private RedisTemplate<Object, Object> redisTemplate;
 
     @Autowired
     private WxMaService wxMaService;
@@ -50,18 +49,21 @@ public class WeChatController {
             }
             String sessionKey = session.getSessionKey();
             String openId = session.getOpenid();
-            log.info("【sessionKey】: {}",sessionKey);
-            log.info("【openid】: {}",openId);
             // 3.根据openid查询用户是否存在
             User user = userService.findUser(session.getOpenid());
             // 4.若用户不存在则创建用户
             if (user == null){
                 user = userService.createUser(session.getOpenid());
             }
-            // 5.生成加密的sessionId;
+            // 5.查看redis中是否有登录信息
+            if (redisTemplate.hasKey("openId::" + openId)){
+                redisTemplate.delete(redisTemplate.opsForValue().get("openId::" + openId));
+            }
+            // 6.生成加密的sessionId;
             sessionId = KeyUtil.getSessionId(sessionKey+openId+System.currentTimeMillis());
-            // 6.存入redis中
-            redisTemplate.opsForValue().set(sessionId, session,30, TimeUnit.MINUTES);
+            // 7.存入redis中
+            redisTemplate.opsForValue().set("sessionId::" + sessionId, session,30, TimeUnit.MINUTES);
+            redisTemplate.opsForValue().set("openId::" + openId, "sessionId::" + sessionId, 30, TimeUnit.MINUTES);
         }catch (WxErrorException e){
             log.error(e.getMessage(), e);
             return ResultVOUtil.error(e.getError().getErrorCode(), e.getError().getErrorMsg());
@@ -69,4 +71,27 @@ public class WeChatController {
         return ResultVOUtil.success(sessionId);
     }
 
+    @GetMapping("/info")
+    public ResultVO<String> WeChatInfo(@RequestParam String sessionId,
+                                       @RequestParam String signature,
+                                       @RequestParam String rawData,
+                                       @RequestParam String encryptedData,
+                                       @RequestParam String iv){
+        // 1.查看是否有sessionId信息
+        if (!redisTemplate.hasKey("sessionId::" + sessionId)){
+            return ResultVOUtil.error(ResultEnum.SESSION_ID_NULL.getCode(), ResultEnum.SESSION_ID_NULL.getMessage());
+        }
+        // 2.从sessionId中取出sessionKey
+        WxMaJscode2SessionResult session = (WxMaJscode2SessionResult) redisTemplate.opsForValue().get("sessionId::" + sessionId);
+        String sessionKey = session.getSessionKey();
+        // 3.校验用户信息
+        if (!wxMaService.getUserService().checkUserInfo(sessionKey, rawData, signature)) {
+            return ResultVOUtil.error(ResultEnum.USER_INFO_ERROR.getCode(), ResultEnum.USER_INFO_ERROR.getMessage());
+        }
+        // 4.解密用户信息
+        WxMaUserInfo userInfo = wxMaService.getUserService().getUserInfo(sessionKey, encryptedData, iv);
+        // 5.更新用户信息
+        User user = userService.updateUser(userInfo);
+        return ResultVOUtil.success(user);
+    }
 }

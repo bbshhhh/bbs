@@ -14,18 +14,10 @@ public class User implements Serializable {
     /** 用户id. */
     @Id
     private String userId;
-    /** 用户登录名. */
-    private String userLoginName;
-    /** 用户登录密码. */
-    private String userLoginPwd;
     /** 用户昵称. */
     private String userName;
     /** 用户性别. */
     private Integer userSex;
-    /** 用户电话. */
-    private String userPhone;
-    /** 用户邮件地址. */
-    private String userEmail;
     /** 用户经验. */
     private String userEx;
     /** 用户个性签名. */
@@ -36,6 +28,12 @@ public class User implements Serializable {
     private Integer userFans;
     /** 用户关注数. */
     private Integer userAttention;
+    /** 用户所在城市. */
+    private String userCity;
+    /** 用户所在省份. */
+    private String userProvince;
+    /** 用户所在国家. */
+    private String userCountry;
     /** 用户注册时间. */
     private Date userTime;
 }

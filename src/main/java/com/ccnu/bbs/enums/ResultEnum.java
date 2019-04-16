@@ -8,6 +8,8 @@ public enum  ResultEnum {
     SUCCESS(0, "成功"),
     CODE_ERROR(1, "未获取到code"),
     SESSION_ERROR(2, "获取sessionKey和openid失败"),
+    SESSION_ID_NULL(3, "sessionId不存在"),
+    USER_INFO_ERROR(4, "用户信息校验失败")
     ;
 
     private Integer code;

@@ -1,21 +1,20 @@
-package com.ccnu.bbs.entity;
+package com.ccnu.bbs.VO;
 
+import com.ccnu.bbs.entity.Keyword;
 import lombok.Data;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 @Data
-@Entity
-public class Article implements Serializable {
+public class ArticleVO {
 
     /** 帖子id. */
-    @Id
     private String articleId;
-    /** 用户id. */
-    private String articleUserId;
+    /** 用户昵称. */
+    private String userName;
+    /** 用户头像. */
+    private String userImg;
     /** 帖子标题. */
     private String articleTitle;
     /** 帖子内容. */
@@ -30,4 +29,6 @@ public class Article implements Serializable {
     private Integer articleLikeNum;
     /** 帖子发表时间. */
     private Date articleCreateTime;
+    /** 帖子关键词. */
+    private List<String> keywords;
 }

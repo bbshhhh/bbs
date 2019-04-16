@@ -15,7 +15,11 @@ public class ArticleServiceImpl implements ArticleService {
     private ArticleRepository articleRepository;
 
     @Override
-    public Page<Article> listArticle(Pageable pageable) {
+    /**
+     * 帖子列表
+     */
+    public Page<Article> allArticle(Pageable pageable) {
         return articleRepository.findAll(pageable);
     }
+
 }

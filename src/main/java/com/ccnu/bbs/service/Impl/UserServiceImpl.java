@@ -1,15 +1,15 @@
 package com.ccnu.bbs.service.Impl;
 
+import cn.binarywang.wx.miniapp.bean.WxMaUserInfo;
 import com.ccnu.bbs.entity.User;
 import com.ccnu.bbs.repository.UserRepository;
 import com.ccnu.bbs.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-
-import javax.annotation.Resource;
-import java.io.Serializable;
 
 @Service
 @Slf4j
@@ -18,29 +18,10 @@ public class UserServiceImpl implements UserService {
     @Autowired
     UserRepository userRepository;
 
-    @Autowired
-    private RedisTemplate<Serializable, Object> redisTemplate;
-
     @Override
+    @Cacheable(cacheNames = "User", key = "#userId")
     public User findUser(String userId) {
-        boolean hasKey = redisTemplate.hasKey(userId);
-        User user;
-        if (hasKey){
-            user = (User) redisTemplate.opsForValue().get(userId);
-            log.info("==========从缓存中获得数据=========");
-            log.info("【用户id】: {}",user.getUserId());
-            log.info("==============================");
-        }
-        else {
-            user = userRepository.findByUserId(userId);
-            if (user != null){
-                log.info("==========从数据表中获得数据=========");
-                log.info("【用户id】: ", user.getUserId());
-                log.info("==============================");
-                redisTemplate.opsForValue().set(userId, user);
-            }
-        }
-        return user;
+        return userRepository.findByUserId(userId);
     }
 
     @Override
@@ -49,5 +30,19 @@ public class UserServiceImpl implements UserService {
         user.setUserId(userId);
         userRepository.save(user);
         return user;
+    }
+
+    @Override
+    @CacheEvict(cacheNames = "User", key = "#userInfo.openId")
+    public User updateUser(WxMaUserInfo userInfo) {
+        String userId = userInfo.getOpenId();
+        User user = userRepository.findByUserId(userId);
+        user.setUserName(userInfo.getNickName());
+        user.setUserSex(Integer.valueOf(userInfo.getGender()));
+        user.setUserCity(userInfo.getCity());
+        user.setUserProvince(userInfo.getProvince());
+        user.setUserCountry(userInfo.getCountry());
+        user.setUserImg(userInfo.getAvatarUrl());
+        return userRepository.save(user);
     }
 }
