@@ -13,10 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.error.WxErrorException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
@@ -36,7 +33,7 @@ public class WeChatController {
     private UserServiceImpl userService;
 
     @GetMapping("/login")
-    public ResultVO<String> WeChatLogin(@RequestParam String code){
+    public ResultVO WeChatLogin(@RequestParam String code){
         String sessionId;
         try{
             // 0.如果code为空，返回错误信息
@@ -54,7 +51,7 @@ public class WeChatController {
             User user = userService.findUser(session.getOpenid());
             // 4.若用户不存在则创建用户
             if (user == null){
-                user = userService.createUser(session.getOpenid());
+                userService.createUser(session.getOpenid());
             }
             // 5.查看redis中是否有登录信息
             if (redisTemplate.hasKey("openId::" + openId)){
@@ -72,10 +69,10 @@ public class WeChatController {
         // 8.返回第三方sessionId交由客户端保存
         HashMap<String, String> map = new HashMap();
         map.put("sessionId", sessionId);
-        return ResultVOUtil.success(sessionId);
+        return ResultVOUtil.success(map);
     }
 
-    @GetMapping("/info")
+    @PostMapping("/info")
     public ResultVO<String> WeChatInfo(@RequestParam String sessionId,
                                        @RequestParam String signature,
                                        @RequestParam String rawData,

@@ -1,6 +1,7 @@
 package com.ccnu.bbs.repository;
 
 import com.ccnu.bbs.entity.User;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 public interface UserRepository extends JpaRepository<User, String> {
 
     // 根据用户id查找用户
+    @Cacheable(cacheNames = "User", key = "#userId")
     User findByUserId(String userId);
 
     // 查看某用户的粉丝

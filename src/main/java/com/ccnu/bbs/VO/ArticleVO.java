@@ -1,6 +1,5 @@
 package com.ccnu.bbs.VO;
 
-import com.ccnu.bbs.entity.Keyword;
 import lombok.Data;
 
 import java.util.Date;

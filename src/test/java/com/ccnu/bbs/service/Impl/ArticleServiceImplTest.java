@@ -1,5 +1,6 @@
 package com.ccnu.bbs.service.Impl;
 
+import com.ccnu.bbs.VO.ArticleVO;
 import com.ccnu.bbs.entity.Article;
 import org.junit.Assert;
 import org.junit.Test;
@@ -9,6 +10,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.util.List;
 
 
 @RunWith(SpringRunner.class)
@@ -20,7 +23,7 @@ public class ArticleServiceImplTest {
 
     @Test
     public void listArticle() {
-        Page<Article> res = articleService.allArticle(PageRequest.of(0, 3));
-        Assert.assertNotEquals(0, res.getSize());
+        List<ArticleVO> res = articleService.allArticle(PageRequest.of(0, 3));
+        Assert.assertNotEquals(0, res.size());
     }
 }

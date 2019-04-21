@@ -7,6 +7,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import javax.transaction.Transactional;
+
 public interface CommentRepository extends JpaRepository<Comment, String> {
 
     // 查看某个帖子的评论(按照点赞数降序排列)
@@ -21,4 +23,10 @@ public interface CommentRepository extends JpaRepository<Comment, String> {
     @Query("select c from Comment c, com.ccnu.bbs.entity.Like l where " +
             "c.commentId = l.likeCommentId and l.likeUserId = ?1")
     Page<Comment> findUserLike(String userId, Pageable pageable);
+
+    @Query("select c from Comment c where c.commentId = ?1")
+    Comment findComment(String commentId);
+
+    @Transactional
+    void deleteByCommentArticleId(String commentId);
 }

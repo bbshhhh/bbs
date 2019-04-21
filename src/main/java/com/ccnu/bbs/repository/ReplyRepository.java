@@ -2,10 +2,13 @@ package com.ccnu.bbs.repository;
 
 
 import com.ccnu.bbs.entity.Reply;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+
+import javax.transaction.Transactional;
 
 public interface ReplyRepository extends JpaRepository<Reply, String> {
 
@@ -16,4 +19,7 @@ public interface ReplyRepository extends JpaRepository<Reply, String> {
     // 查看某个用户的回复(按照恢复时间降序排列)
     @Query("select r from Reply r where r.replyUserId = ?1 order by r.replyTime desc")
     Page<Reply> findUserReply(String userId, Pageable pageable);
+
+    @Transactional
+    void deleteByReplyCommentId(String replyId);
 }

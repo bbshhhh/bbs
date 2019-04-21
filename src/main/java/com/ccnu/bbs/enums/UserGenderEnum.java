@@ -3,7 +3,7 @@ package com.ccnu.bbs.enums;
 import lombok.Getter;
 
 @Getter
-public enum UserSexEnum implements CodeEnum {
+public enum UserGenderEnum implements CodeEnum {
 
     UNKNOWN(0,"未知"),
     MAN(1,"男"),
@@ -14,7 +14,7 @@ public enum UserSexEnum implements CodeEnum {
 
     private String message;
 
-    UserSexEnum(Integer code, String message) {
+    UserGenderEnum(Integer code, String message) {
         this.code = code;
         this.message = message;
     }

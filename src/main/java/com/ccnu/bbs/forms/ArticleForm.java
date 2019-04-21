@@ -1,7 +1,6 @@
 package com.ccnu.bbs.forms;
 
 import lombok.Data;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.NotEmpty;
 import java.util.List;
@@ -16,5 +15,5 @@ public class ArticleForm {
     @NotEmpty
     private String articleContent;
     /** 上传的图片. */
-    private List<MultipartFile> multipartFiles;
+    private List<String> imgUrls;
 }

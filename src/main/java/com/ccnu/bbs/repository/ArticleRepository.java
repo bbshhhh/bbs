@@ -29,6 +29,8 @@ public interface ArticleRepository extends JpaRepository<Article, BigInteger> {
             "a.articleId = l.likeArticleId and l.likeUserId = ?1 order by a.articleCreateTime desc ")
     Page<Article> findUserLike(String userId, Pageable pageable);
 
+    @Query("select a from Article a where a.articleId = ?1")
+    Article findArticle(String articleId);
 
     @Transactional
     void deleteByArticleId(String articleId);
