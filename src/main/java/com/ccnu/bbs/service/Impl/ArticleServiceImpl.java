@@ -2,11 +2,11 @@ package com.ccnu.bbs.service.Impl;
 
 import com.ccnu.bbs.VO.ArticleVO;
 import com.ccnu.bbs.entity.Article;
+import com.ccnu.bbs.entity.Collect;
+import com.ccnu.bbs.entity.Like;
 import com.ccnu.bbs.entity.User;
 import com.ccnu.bbs.forms.ArticleForm;
-import com.ccnu.bbs.repository.ArticleRepository;
-import com.ccnu.bbs.repository.KeywordRepository;
-import com.ccnu.bbs.repository.UserRepository;
+import com.ccnu.bbs.repository.*;
 import com.ccnu.bbs.service.ArticleService;
 import com.ccnu.bbs.utils.KeyUtil;
 import com.ccnu.bbs.utils.QiniuCloudUtil;
@@ -37,17 +37,23 @@ public class ArticleServiceImpl implements ArticleService {
     @Autowired
     private KeywordRepository keywordRepository;
 
+    @Autowired
+    private LikeRepository likeRepository;
+
+    @Autowired
+    private CollectRepository collectRepository;
+
     @Override
     /**
      * 帖子列表
      */
-    public List<ArticleVO> allArticle(Pageable pageable) {
+    public List<ArticleVO> allArticle(String userId, Pageable pageable) {
         // 1.查找出帖子列表并按热度排序
         Page<Article> articles = articleRepository.findAll(pageable);
         List<ArticleVO> articleVOList = new ArrayList();
         // 2.对每一篇帖子进行拼装
         for (Article article : articles){
-            ArticleVO articleVO = article2articleVO(article);
+            ArticleVO articleVO = article2articleVO(article, userId);
             articleVOList.add(articleVO);
         }
         return articleVOList;
@@ -57,7 +63,7 @@ public class ArticleServiceImpl implements ArticleService {
     /**
      * 创建帖子
      */
-    public Article createArticle(ArticleForm articleForm, String userId){
+    public Article createArticle(String userId, ArticleForm articleForm){
         Article article = new Article();
         if (!articleForm.getImgUrls().isEmpty()){
             // 1.获取图片url列表
@@ -105,11 +111,11 @@ public class ArticleServiceImpl implements ArticleService {
      * 查看文章
      */
     @Cacheable(cacheNames = "Article", key = "#articleId")
-    public ArticleVO findArticle(String articleId) {
+    public ArticleVO findArticle(String userId, String articleId) {
         Article article = articleRepository.findArticle(articleId);
         ArticleVO articleVO = null;
         if (article != null){
-            articleVO = article2articleVO(article);
+            articleVO = article2articleVO(article, userId);
         }
         return articleVO;
     }
@@ -117,9 +123,10 @@ public class ArticleServiceImpl implements ArticleService {
     /**
      * 文章内容拼装
      * @param article
+     * @param userId
      * @return
      */
-    private ArticleVO article2articleVO(Article article){
+    private ArticleVO article2articleVO(Article article, String userId){
         ArticleVO articleVO = new ArticleVO();
         // 获得文章信息
         BeanUtils.copyProperties(article, articleVO);
@@ -133,6 +140,22 @@ public class ArticleServiceImpl implements ArticleService {
         // 查找关键词信息
         List<String> keywords = keywordRepository.findArticleKeyword(article.getArticleId());
         articleVO.setKeywords(keywords);
+        // 查看文章是否被当前用户点赞
+        Like like = likeRepository.findLikeArticle(article.getArticleId(), userId);
+        if (like != null){
+            articleVO.setIsLike(true);
+        }
+        else {
+            articleVO.setIsLike(false);
+        }
+        // 查看文章是否被当前用户收藏
+        Collect collect = collectRepository.findCollect(article.getArticleId(), userId);
+        if (collect != null){
+            articleVO.setIsCollect(true);
+        }
+        else {
+            articleVO.setIsCollect(false);
+        }
         return articleVO;
     }
 

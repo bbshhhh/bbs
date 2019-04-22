@@ -49,6 +49,9 @@ public class ReplyServiceImpl implements ReplyService {
     }
 
     @Override
+    /**
+     * 创建回复
+     */
     public Reply createReply(ReplyForm replyForm, String userId) {
         Reply reply = new Reply();
         BeanUtils.copyProperties(replyForm, reply);

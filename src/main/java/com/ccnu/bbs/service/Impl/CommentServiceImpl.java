@@ -3,9 +3,11 @@ package com.ccnu.bbs.service.Impl;
 import com.ccnu.bbs.VO.CommentVO;
 import com.ccnu.bbs.VO.ReplyVO;
 import com.ccnu.bbs.entity.Comment;
+import com.ccnu.bbs.entity.Like;
 import com.ccnu.bbs.entity.User;
 import com.ccnu.bbs.forms.CommentForm;
 import com.ccnu.bbs.repository.CommentRepository;
+import com.ccnu.bbs.repository.LikeRepository;
 import com.ccnu.bbs.repository.UserRepository;
 import com.ccnu.bbs.service.CommentService;
 import com.ccnu.bbs.utils.KeyUtil;
@@ -32,17 +34,20 @@ public class CommentServiceImpl implements CommentService {
     @Autowired
     private ReplyServiceImpl replyService;
 
+    @Autowired
+    private LikeRepository likeRepository;
+
     @Override
     /**
      * 查询帖子评论列表
      */
-    public List<CommentVO> articleComment(String articleId, Pageable pageable) {
+    public List<CommentVO> articleComment(String userId, String articleId, Pageable pageable) {
         // 1.根据帖子id查询评论，并按照评论点赞数降序排列
         Page<Comment> comments = commentRepository.findArticleComment(articleId, pageable);
         List<CommentVO> commentVOList = new ArrayList();
         // 2.对每一个评论加入评论作者信息和回复信息
         for (Comment comment : comments){
-            CommentVO commentVO = comment2commentVO(comment);
+            CommentVO commentVO = comment2commentVO(userId, comment);
             commentVOList.add(commentVO);
         }
         return commentVOList;
@@ -52,7 +57,7 @@ public class CommentServiceImpl implements CommentService {
     /**
      * 创建评论
      */
-    public Comment createComment(CommentForm commentForm, String userId){
+    public Comment createComment(String userId, CommentForm commentForm){
         Comment comment = new Comment();
         BeanUtils.copyProperties(commentForm, comment);
         // 1.设置主键
@@ -69,21 +74,22 @@ public class CommentServiceImpl implements CommentService {
      * 查看评论
      */
     @Cacheable(cacheNames = "Comment", key = "#commentId")
-    public CommentVO findComment(String commentId){
+    public CommentVO findComment(String userId, String commentId){
         Comment comment = commentRepository.findComment(commentId);
         CommentVO commentVO = null;
         if (comment != null){
-            commentVO = comment2commentVO(comment);
+            commentVO = comment2commentVO(userId, comment);
         }
         return commentVO;
     }
 
     /**
      * 评论内容拼装
+     * @param userId
      * @param comment
      * @return
      */
-    CommentVO comment2commentVO(Comment comment){
+    CommentVO comment2commentVO(String userId, Comment comment){
 
         CommentVO commentVO = new CommentVO();
         // 获得评论信息
@@ -94,6 +100,14 @@ public class CommentServiceImpl implements CommentService {
         // 查找回复信息
         List<ReplyVO> replies = replyService.commentReply(comment.getCommentId(), PageRequest.of(0, 3)).getContent();
         commentVO.setReplies(replies);
+        // 查看评论是否被当前用户点赞
+        Like like = likeRepository.findLikeComment(comment.getCommentId(), userId);
+        if (like != null){
+            commentVO.setIsLike(true);
+        }
+        else {
+            commentVO.setIsLike(false);
+        }
         return commentVO;
     }
 }

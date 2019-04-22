@@ -27,14 +27,12 @@ public class ReplyController {
     @Autowired
     private ReplyServiceImpl replyService;
 
-    @Autowired
-    private RedisTemplate<Object, Object> redisTemplate;
 
     @GetMapping("/list")
     public ResultVO list(@RequestParam String commentId,
                          @RequestParam(value = "page", defaultValue = "1") Integer page,
                          @RequestParam(value = "size", defaultValue = "10") Integer size){
-        // 1.校验帖子id
+        // 1.校验评论id
         if (commentId == null||commentId.isEmpty()){
             return ResultVOUtil.error(ResultEnum.COMMENT_ID_ERROR.getCode(), ResultEnum.COMMENT_ID_ERROR.getMessage());
         }
@@ -43,25 +41,18 @@ public class ReplyController {
     }
 
     @PostMapping("/create")
-    public ResultVO create(@RequestParam String sessionId,
+    public ResultVO create(@RequestAttribute String userId,
                            @RequestBody ReplyForm replyForm,
                            BindingResult bindingResult){
-        // 1.查看是否有sessionId信息
-        if (!redisTemplate.hasKey("sessionId::" + sessionId)){
-            return ResultVOUtil.error(ResultEnum.SESSION_ID_NULL.getCode(), ResultEnum.SESSION_ID_NULL.getMessage());
-        }
-        // 2.查看表单参数是否有问题
+        // 1.查看表单参数是否有问题
         if (bindingResult.hasErrors()){
             log.error("【发表回复】参数不正确, articleForm={}", replyForm);
             throw new BBSException(ResultEnum.PARAM_ERROR.getCode(),
                     bindingResult.getFieldError().getDefaultMessage());
         }
-        // 3.得到用户信息
-        WxMaJscode2SessionResult session = (WxMaJscode2SessionResult) redisTemplate.opsForValue().get("sessionId::" + sessionId);
-        String userId = session.getOpenid();
-        // 4.将评论保存进数据库中
+        // 2.将评论保存进数据库中
         Reply reply = replyService.createReply(replyForm, userId);
-        // 5.返回帖子id
+        // 3.返回评论id
         HashMap<String, String> map = new HashMap();
         map.put("commentId", reply.getReplyId());
         return ResultVOUtil.success(map);

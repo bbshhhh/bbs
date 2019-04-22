@@ -13,14 +13,14 @@ import java.util.List;
 public interface ArticleService {
 
     /** 查询帖子列表. */
-    List<ArticleVO> allArticle(Pageable pageable);
+    List<ArticleVO> allArticle(String userId, Pageable pageable);
 
     /** 创建帖子. */
-    Article createArticle(ArticleForm articleForm, String userId);
+    Article createArticle(String userId, ArticleForm articleForm);
 
     /** 上传图片. */
     List<String> uploadImg(List<MultipartFile> multipartFiles) throws IOException;
 
     /** 查找帖子. */
-    ArticleVO findArticle(String articleId);
+    ArticleVO findArticle(String articleId, String userId);
 }

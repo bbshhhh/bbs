@@ -26,6 +26,10 @@ public class ArticleVO {
     private Double articleHotNum;
     /** 帖子点赞次数. */
     private Integer articleLikeNum;
+    /** 是否被当前用户点赞过. */
+    private Boolean isLike;
+    /** 是否被当前用户收藏过. */
+    private Boolean isCollect;
     /** 帖子发表时间. */
     private Date articleCreateTime;
     /** 帖子关键词. */
