@@ -3,8 +3,9 @@ package com.ccnu.bbs.service.Impl;
 import com.ccnu.bbs.VO.ArticleVO;
 import com.ccnu.bbs.entity.Article;
 import com.ccnu.bbs.entity.Collect;
-import com.ccnu.bbs.entity.Like;
+import com.ccnu.bbs.entity.LikeArticle;
 import com.ccnu.bbs.entity.User;
+import com.ccnu.bbs.enums.LikeEnum;
 import com.ccnu.bbs.forms.ArticleForm;
 import com.ccnu.bbs.repository.*;
 import com.ccnu.bbs.service.ArticleService;
@@ -38,7 +39,7 @@ public class ArticleServiceImpl implements ArticleService {
     private KeywordRepository keywordRepository;
 
     @Autowired
-    private LikeRepository likeRepository;
+    private LikeArticleRepository likeArticleRepository;
 
     @Autowired
     private CollectRepository collectRepository;
@@ -141,9 +142,9 @@ public class ArticleServiceImpl implements ArticleService {
         List<String> keywords = keywordRepository.findArticleKeyword(article.getArticleId());
         articleVO.setKeywords(keywords);
         // 查看文章是否被当前用户点赞
-        Like like = likeRepository.findLikeArticle(article.getArticleId(), userId);
-        if (like != null){
-            articleVO.setIsLike(true);
+        LikeArticle likeArticle = likeArticleRepository.findLikeArticle(article.getArticleId(), userId);
+        if (likeArticle != null){
+            articleVO.setIsLike(likeArticle.getIsLike() == LikeEnum.LIKE.getCode()? true:false);
         }
         else {
             articleVO.setIsLike(false);

@@ -20,7 +20,7 @@ public interface CommentRepository extends JpaRepository<Comment, String> {
     Page<Comment> findUserComment(String userId, Pageable pageable);
 
     // 查看被某个用户点赞的评论
-    @Query("select c from Comment c, com.ccnu.bbs.entity.Like l where " +
+    @Query("select c from Comment c, com.ccnu.bbs.entity.LikeArticle l where " +
             "c.commentId = l.likeCommentId and l.likeUserId = ?1")
     Page<Comment> findUserLike(String userId, Pageable pageable);
 

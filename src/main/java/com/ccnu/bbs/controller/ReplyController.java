@@ -54,7 +54,7 @@ public class ReplyController {
         Reply reply = replyService.createReply(replyForm, userId);
         // 3.返回评论id
         HashMap<String, String> map = new HashMap();
-        map.put("commentId", reply.getReplyId());
+        map.put("replyId", reply.getReplyId());
         return ResultVOUtil.success(map);
     }
 }

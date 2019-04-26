@@ -29,12 +29,12 @@ public interface UserRepository extends JpaRepository<User, String> {
     Page<User> findCollectUser(String articleId, Pageable pageable);
 
     // 查看点赞了某帖子的用户
-    @Query("select u from User u, com.ccnu.bbs.entity.Like l where " +
+    @Query("select u from User u, com.ccnu.bbs.entity.LikeArticle l where " +
             "u.userId = l.likeUserId and l.likeArticleId = ?1")
     Page<User> findLikeArticleUser(String articleId, Pageable pageable);
 
     // 查看点赞了某评论的用户
-    @Query("select u from User u, com.ccnu.bbs.entity.Like l where " +
+    @Query("select u from User u, com.ccnu.bbs.entity.LikeArticle l where " +
             "u.userId = l.likeUserId and l.likeCommentId = ?1")
     Page<User> findLikeCommentUser(String commentId, Pageable pageable);
 }

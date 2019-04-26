@@ -3,11 +3,12 @@ package com.ccnu.bbs.service.Impl;
 import com.ccnu.bbs.VO.CommentVO;
 import com.ccnu.bbs.VO.ReplyVO;
 import com.ccnu.bbs.entity.Comment;
-import com.ccnu.bbs.entity.Like;
+import com.ccnu.bbs.entity.LikeComment;
 import com.ccnu.bbs.entity.User;
+import com.ccnu.bbs.enums.LikeEnum;
 import com.ccnu.bbs.forms.CommentForm;
 import com.ccnu.bbs.repository.CommentRepository;
-import com.ccnu.bbs.repository.LikeRepository;
+import com.ccnu.bbs.repository.LikeCommentRepository;
 import com.ccnu.bbs.repository.UserRepository;
 import com.ccnu.bbs.service.CommentService;
 import com.ccnu.bbs.utils.KeyUtil;
@@ -35,7 +36,7 @@ public class CommentServiceImpl implements CommentService {
     private ReplyServiceImpl replyService;
 
     @Autowired
-    private LikeRepository likeRepository;
+    private LikeCommentRepository likeCommentRepository;
 
     @Override
     /**
@@ -101,9 +102,9 @@ public class CommentServiceImpl implements CommentService {
         List<ReplyVO> replies = replyService.commentReply(comment.getCommentId(), PageRequest.of(0, 3)).getContent();
         commentVO.setReplies(replies);
         // 查看评论是否被当前用户点赞
-        Like like = likeRepository.findLikeComment(comment.getCommentId(), userId);
-        if (like != null){
-            commentVO.setIsLike(true);
+        LikeComment likeComment = likeCommentRepository.findLikeComment(comment.getCommentId(), userId);
+        if (likeComment != null){
+            commentVO.setIsLike(likeComment.getIsLike() == LikeEnum.LIKE.getCode()? true:false);
         }
         else {
             commentVO.setIsLike(false);

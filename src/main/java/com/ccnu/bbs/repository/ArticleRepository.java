@@ -25,7 +25,7 @@ public interface ArticleRepository extends JpaRepository<Article, BigInteger> {
     Page<Article> findUserCollect(String userId, Pageable pageable);
 
     // 查看被某位用户点赞的帖子
-    @Query("select a from Article a, com.ccnu.bbs.entity.Like l where " +
+    @Query("select a from Article a, com.ccnu.bbs.entity.LikeArticle l where " +
             "a.articleId = l.likeArticleId and l.likeUserId = ?1 order by a.articleCreateTime desc ")
     Page<Article> findUserLike(String userId, Pageable pageable);
 
