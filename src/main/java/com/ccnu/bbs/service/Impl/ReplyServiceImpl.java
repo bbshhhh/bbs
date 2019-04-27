@@ -5,7 +5,6 @@ import com.ccnu.bbs.entity.Reply;
 import com.ccnu.bbs.entity.User;
 import com.ccnu.bbs.forms.ReplyForm;
 import com.ccnu.bbs.repository.ReplyRepository;
-import com.ccnu.bbs.repository.UserRepository;
 import com.ccnu.bbs.service.ReplyService;
 import com.ccnu.bbs.utils.KeyUtil;
 import org.springframework.beans.BeanUtils;
@@ -25,7 +24,7 @@ public class ReplyServiceImpl implements ReplyService {
     private ReplyRepository replyRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private UserServiceImpl userService;
 
     @Override
     /**
@@ -41,7 +40,7 @@ public class ReplyServiceImpl implements ReplyService {
             // 获得回复信息
             BeanUtils.copyProperties(reply, replyVO);
             // 获得回复作者信息
-            User user = userRepository.findByUserId(reply.getReplyUserId());
+            User user = userService.findUser(reply.getReplyUserId());
             BeanUtils.copyProperties(user, replyVO);
             replyVOList.add(replyVO);
         }

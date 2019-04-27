@@ -3,9 +3,7 @@ package com.ccnu.bbs.service.Impl;
 import com.ccnu.bbs.VO.ArticleVO;
 import com.ccnu.bbs.entity.Article;
 import com.ccnu.bbs.entity.Collect;
-import com.ccnu.bbs.entity.LikeArticle;
 import com.ccnu.bbs.entity.User;
-import com.ccnu.bbs.enums.LikeEnum;
 import com.ccnu.bbs.forms.ArticleForm;
 import com.ccnu.bbs.repository.*;
 import com.ccnu.bbs.service.ArticleService;
@@ -33,13 +31,13 @@ public class ArticleServiceImpl implements ArticleService {
     private ArticleRepository articleRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private UserServiceImpl userService;
 
     @Autowired
-    private KeywordRepository keywordRepository;
+    private KeywordServiceImpl keywordService;
 
     @Autowired
-    private LikeArticleRepository likeArticleRepository;
+    private LikeServiceImpl likeService;
 
     @Autowired
     private CollectRepository collectRepository;
@@ -132,23 +130,17 @@ public class ArticleServiceImpl implements ArticleService {
         // 获得文章信息
         BeanUtils.copyProperties(article, articleVO);
         // 查找作者信息
-        User user = userRepository.findByUserId(article.getArticleUserId());
+        User user = userService.findUser(article.getArticleUserId());
         BeanUtils.copyProperties(user, articleVO);
         // 获得图片url
         if (article.getArticleImg()!=null){
             articleVO.setArticleImages(Arrays.asList(article.getArticleImg().split(";")));
         }
         // 查找关键词信息
-        List<String> keywords = keywordRepository.findArticleKeyword(article.getArticleId());
+        List<String> keywords = keywordService.articleKeywords(article.getArticleId());
         articleVO.setKeywords(keywords);
         // 查看文章是否被当前用户点赞
-        LikeArticle likeArticle = likeArticleRepository.findLikeArticle(article.getArticleId(), userId);
-        if (likeArticle != null){
-            articleVO.setIsLike(likeArticle.getIsLike() == LikeEnum.LIKE.getCode()? true:false);
-        }
-        else {
-            articleVO.setIsLike(false);
-        }
+        articleVO.setIsLike(likeService.isArticleLike(article.getArticleId(), userId));
         // 查看文章是否被当前用户收藏
         Collect collect = collectRepository.findCollect(article.getArticleId(), userId);
         if (collect != null){

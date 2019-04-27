@@ -3,13 +3,9 @@ package com.ccnu.bbs.service.Impl;
 import com.ccnu.bbs.VO.CommentVO;
 import com.ccnu.bbs.VO.ReplyVO;
 import com.ccnu.bbs.entity.Comment;
-import com.ccnu.bbs.entity.LikeComment;
 import com.ccnu.bbs.entity.User;
-import com.ccnu.bbs.enums.LikeEnum;
 import com.ccnu.bbs.forms.CommentForm;
 import com.ccnu.bbs.repository.CommentRepository;
-import com.ccnu.bbs.repository.LikeCommentRepository;
-import com.ccnu.bbs.repository.UserRepository;
 import com.ccnu.bbs.service.CommentService;
 import com.ccnu.bbs.utils.KeyUtil;
 import org.springframework.beans.BeanUtils;
@@ -30,13 +26,13 @@ public class CommentServiceImpl implements CommentService {
     private CommentRepository commentRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private UserServiceImpl userService;
 
     @Autowired
     private ReplyServiceImpl replyService;
 
     @Autowired
-    private LikeCommentRepository likeCommentRepository;
+    private LikeServiceImpl likeService;
 
     @Override
     /**
@@ -96,19 +92,13 @@ public class CommentServiceImpl implements CommentService {
         // 获得评论信息
         BeanUtils.copyProperties(comment, commentVO);
         // 查找作者信息
-        User user = userRepository.findByUserId(comment.getCommentUserId());
+        User user = userService.findUser(comment.getCommentUserId());
         BeanUtils.copyProperties(user, commentVO);
         // 查找回复信息
         List<ReplyVO> replies = replyService.commentReply(comment.getCommentId(), PageRequest.of(0, 3)).getContent();
         commentVO.setReplies(replies);
         // 查看评论是否被当前用户点赞
-        LikeComment likeComment = likeCommentRepository.findLikeComment(comment.getCommentId(), userId);
-        if (likeComment != null){
-            commentVO.setIsLike(likeComment.getIsLike() == LikeEnum.LIKE.getCode()? true:false);
-        }
-        else {
-            commentVO.setIsLike(false);
-        }
+        commentVO.setIsLike(likeService.isCommentLike(comment.getCommentId(), userId));
         return commentVO;
     }
 }

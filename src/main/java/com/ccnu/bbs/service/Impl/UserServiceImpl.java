@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -20,6 +21,7 @@ public class UserServiceImpl implements UserService {
     UserRepository userRepository;
 
     @Override
+    @Cacheable(cacheNames = "User", key = "#userId")
     public User findUser(String userId) {
         return userRepository.findByUserId(userId);
     }

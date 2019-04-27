@@ -7,6 +7,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class KeywordServiceImpl implements KeywordService {
@@ -15,8 +16,15 @@ public class KeywordServiceImpl implements KeywordService {
     private KeywordRepository keywordRepository;
 
     @Override
-    @Cacheable(cacheNames = "Keywords", key = "#articleId")
-    public List<String> articleKeyword(String articleId){
+    @Cacheable(cacheNames = "Keywords:Article", key = "#articleId")
+    public List<String> articleKeywords(String articleId){
         return keywordRepository.findArticleKeyword(articleId);
     }
+
+    @Override
+    @Cacheable(cacheNames = "Keywords:User", key = "#userId")
+    public List<Map<String, Object>> userKeywords(String userId){
+        return keywordRepository.findUserKeyword(userId);
+    }
+
 }
