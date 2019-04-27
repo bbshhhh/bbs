@@ -30,14 +30,13 @@ public class CommentController {
 
     @GetMapping("/list")
     public ResultVO list(@RequestParam String articleId,
-                         @RequestAttribute String userId,
                          @RequestParam(value = "page", defaultValue = "1") Integer page,
                          @RequestParam(value = "size", defaultValue = "10") Integer size){
         // 1.校验帖子id
         if (articleId == null||articleId.isEmpty()){
             return ResultVOUtil.error(ResultEnum.ARTICLE_ID_ERROR.getCode(), ResultEnum.ARTICLE_ID_ERROR.getMessage());
         }
-        List<CommentVO> commentVOList = commentService.articleComment(userId, articleId, PageRequest.of(page - 1, size));
+        List<CommentVO> commentVOList = commentService.articleComment(articleId, PageRequest.of(page - 1, size));
         return ResultVOUtil.success(commentVOList);
     }
 
@@ -60,11 +59,10 @@ public class CommentController {
     }
 
     @GetMapping("/content")
-    public ResultVO content(@RequestAttribute String userId,
-                            @RequestParam String commentId){
+    public ResultVO content(@RequestParam String commentId){
         if (commentId == null){
             return ResultVOUtil.error(ResultEnum.COMMENT_ID_ERROR.getCode(), ResultEnum.COMMENT_ID_ERROR.getMessage());
         }
-        return ResultVOUtil.success(commentService.findComment(userId, commentId));
+        return ResultVOUtil.success(commentService.findComment(commentId));
     }
 }

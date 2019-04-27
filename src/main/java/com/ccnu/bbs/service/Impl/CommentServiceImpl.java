@@ -38,13 +38,13 @@ public class CommentServiceImpl implements CommentService {
     /**
      * 查询帖子评论列表
      */
-    public List<CommentVO> articleComment(String userId, String articleId, Pageable pageable) {
+    public List<CommentVO> articleComment(String articleId, Pageable pageable) {
         // 1.根据帖子id查询评论，并按照评论点赞数降序排列
         Page<Comment> comments = commentRepository.findArticleComment(articleId, pageable);
         List<CommentVO> commentVOList = new ArrayList();
         // 2.对每一个评论加入评论作者信息和回复信息
         for (Comment comment : comments){
-            CommentVO commentVO = comment2commentVO(userId, comment);
+            CommentVO commentVO = comment2commentVO(comment.getCommentUserId(), comment);
             commentVOList.add(commentVO);
         }
         return commentVOList;
@@ -71,11 +71,11 @@ public class CommentServiceImpl implements CommentService {
      * 查看评论
      */
     @Cacheable(cacheNames = "Comment", key = "#commentId")
-    public CommentVO findComment(String userId, String commentId){
+    public CommentVO findComment(String commentId){
         Comment comment = commentRepository.findComment(commentId);
         CommentVO commentVO = null;
         if (comment != null){
-            commentVO = comment2commentVO(userId, comment);
+            commentVO = comment2commentVO(comment.getCommentUserId(), comment);
         }
         return commentVO;
     }

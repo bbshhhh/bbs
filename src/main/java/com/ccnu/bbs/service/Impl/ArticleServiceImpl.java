@@ -46,13 +46,13 @@ public class ArticleServiceImpl implements ArticleService {
     /**
      * 帖子列表
      */
-    public List<ArticleVO> allArticle(String userId, Pageable pageable) {
+    public List<ArticleVO> allArticle(Pageable pageable) {
         // 1.查找出帖子列表并按热度排序
         Page<Article> articles = articleRepository.findAll(pageable);
         List<ArticleVO> articleVOList = new ArrayList();
         // 2.对每一篇帖子进行拼装
         for (Article article : articles){
-            ArticleVO articleVO = article2articleVO(article, userId);
+            ArticleVO articleVO = article2articleVO(article, article.getArticleUserId());
             articleVOList.add(articleVO);
         }
         return articleVOList;
@@ -110,11 +110,11 @@ public class ArticleServiceImpl implements ArticleService {
      * 查看文章
      */
     @Cacheable(cacheNames = "Article", key = "#articleId")
-    public ArticleVO findArticle(String userId, String articleId) {
+    public ArticleVO findArticle(String articleId) {
         Article article = articleRepository.findArticle(articleId);
         ArticleVO articleVO = null;
         if (article != null){
-            articleVO = article2articleVO(article, userId);
+            articleVO = article2articleVO(article, article.getArticleUserId());
         }
         return articleVO;
     }

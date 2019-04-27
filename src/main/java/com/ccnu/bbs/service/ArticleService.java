@@ -13,7 +13,7 @@ import java.util.List;
 public interface ArticleService {
 
     /** 查询帖子列表. */
-    List<ArticleVO> allArticle(String userId, Pageable pageable);
+    List<ArticleVO> allArticle(Pageable pageable);
 
     /** 创建帖子. */
     Article createArticle(String userId, ArticleForm articleForm);
@@ -22,5 +22,5 @@ public interface ArticleService {
     List<String> uploadImg(List<MultipartFile> multipartFiles) throws IOException;
 
     /** 查找帖子. */
-    ArticleVO findArticle(String articleId, String userId);
+    ArticleVO findArticle(String articleId);
 }

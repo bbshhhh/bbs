@@ -24,5 +24,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
         loginRegistry.addPathPatterns("/**");
         // 排除路径
         loginRegistry.excludePathPatterns("/wechat/**");
+        loginRegistry.excludePathPatterns("/article/list/**");
     }
 }

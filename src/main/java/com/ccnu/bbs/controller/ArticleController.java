@@ -38,11 +38,10 @@ public class ArticleController {
      * @return
      */
     @GetMapping("/list")
-    public ResultVO list(@RequestAttribute String userId,
-                         @RequestParam(value = "page", defaultValue = "1") Integer page,
+    public ResultVO list(@RequestParam(value = "page", defaultValue = "1") Integer page,
                          @RequestParam(value = "size", defaultValue = "10") Integer size){
         // 查询帖子列表
-        List<ArticleVO> articles = articleService.allArticle(userId, PageRequest.of(page - 1, size));
+        List<ArticleVO> articles = articleService.allArticle(PageRequest.of(page - 1, size));
         return ResultVOUtil.success(articles);
     }
 
@@ -89,12 +88,11 @@ public class ArticleController {
     }
 
     @GetMapping("/content")
-    public ResultVO content(@RequestAttribute String userId,
-                            @RequestParam String articleId){
+    public ResultVO content(@RequestParam String articleId){
         // 查询帖子内容
         if (articleId == null){
             return ResultVOUtil.error(ResultEnum.ARTICLE_ID_ERROR.getCode(), ResultEnum.ARTICLE_ID_ERROR.getMessage());
         }
-        return ResultVOUtil.success(articleService.findArticle(userId, articleId));
+        return ResultVOUtil.success(articleService.findArticle(articleId));
     }
 }
