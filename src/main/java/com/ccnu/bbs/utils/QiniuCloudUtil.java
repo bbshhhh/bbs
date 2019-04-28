@@ -1,6 +1,6 @@
 package com.ccnu.bbs.utils;
 
-import com.ccnu.bbs.config.QiNiuConfig;
+import com.ccnu.bbs.config.QiNiuAccountConfig;
 import com.google.gson.Gson;
 import com.qiniu.common.QiniuException;
 import com.qiniu.common.Zone;
@@ -18,7 +18,7 @@ import java.io.FileInputStream;
 public class QiniuCloudUtil {
 
     @Autowired
-    private QiNiuConfig qiNiuConfig;
+    private QiNiuAccountConfig qiNiuConfig;
 
     public String uploadQNImg(FileInputStream file, String key) {
 

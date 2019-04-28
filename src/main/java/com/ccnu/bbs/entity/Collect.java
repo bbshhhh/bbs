@@ -16,4 +16,6 @@ public class Collect {
     private String collectArticleId;
     /** 收藏用户id. */
     private String collectUserId;
+    /** 是否收藏. */
+    private Integer isCollect;
 }

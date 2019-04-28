@@ -2,9 +2,11 @@ package com.ccnu.bbs.service.Impl;
 
 import com.ccnu.bbs.VO.CommentVO;
 import com.ccnu.bbs.VO.ReplyVO;
+import com.ccnu.bbs.entity.Article;
 import com.ccnu.bbs.entity.Comment;
 import com.ccnu.bbs.entity.User;
 import com.ccnu.bbs.forms.CommentForm;
+import com.ccnu.bbs.repository.ArticleRepository;
 import com.ccnu.bbs.repository.CommentRepository;
 import com.ccnu.bbs.service.CommentService;
 import com.ccnu.bbs.utils.KeyUtil;
@@ -14,16 +16,20 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CommentServiceImpl implements CommentService {
 
     @Autowired
     private CommentRepository commentRepository;
+
+    @Autowired
+    private ArticleRepository articleRepository;
 
     @Autowired
     private UserServiceImpl userService;
@@ -34,19 +40,33 @@ public class CommentServiceImpl implements CommentService {
     @Autowired
     private LikeServiceImpl likeService;
 
+    @Autowired
+    private RedisTemplate<Object, Object> redisTemplate;
+
+    @Override
+    /**
+     * 热评列表
+     */
+    public List<CommentVO> hotArticleComment(String articleId){
+        // 1.根据帖子id查询评论，并按照点赞数降序排列(取前3的评论)
+        List<Comment> comments = commentRepository.findArticleCommentByLike(articleId);
+        comments = comments.subList(0, comments.size() > 3 ? 3 : comments.size());
+        // 2.对每一个评论加入评论作者信息和回复信息
+        List<CommentVO> commentVOList = comments.stream().
+                map(e -> comment2commentVO(e.getCommentUserId(), e)).collect(Collectors.toList());
+        return commentVOList;
+    }
+
     @Override
     /**
      * 查询帖子评论列表
      */
     public List<CommentVO> articleComment(String articleId, Pageable pageable) {
-        // 1.根据帖子id查询评论，并按照评论点赞数降序排列
-        Page<Comment> comments = commentRepository.findArticleComment(articleId, pageable);
-        List<CommentVO> commentVOList = new ArrayList();
+        // 1.根据帖子id查询评论，并按照评论时间升序排列
+        Page<Comment> comments = commentRepository.findArticleCommentByTime(articleId, pageable);
         // 2.对每一个评论加入评论作者信息和回复信息
-        for (Comment comment : comments){
-            CommentVO commentVO = comment2commentVO(comment.getCommentUserId(), comment);
-            commentVOList.add(commentVO);
-        }
+        List<CommentVO> commentVOList = comments.stream().
+                map(e -> comment2commentVO(e.getCommentUserId(), e)).collect(Collectors.toList());
         return commentVOList;
     }
 
@@ -63,6 +83,19 @@ public class CommentServiceImpl implements CommentService {
         comment.setCommentArticleId(commentForm.getArticleId());
         // 3.设置评论者
         comment.setCommentUserId(userId);
+        // 4.在redis或数据库中查找帖子
+        Article article;
+        if (redisTemplate.hasKey("Article::" + comment.getCommentArticleId())){
+            article = (Article) redisTemplate.opsForValue().get("Article::" + comment.getCommentArticleId());
+        }
+        else {
+            article = articleRepository.findArticle(comment.getCommentArticleId());
+        }
+        // 5.将帖子评论数+1，存入redis中
+        if (article != null){
+            article.setArticleCommentNum(article.getArticleCommentNum() + 1);
+            redisTemplate.opsForValue().set("Article::" + comment.getCommentArticleId(), article);
+        }
         return commentRepository.save(comment);
     }
 

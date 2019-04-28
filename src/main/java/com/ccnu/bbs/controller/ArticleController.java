@@ -1,18 +1,20 @@
 package com.ccnu.bbs.controller;
 
-import cn.binarywang.wx.miniapp.bean.WxMaJscode2SessionResult;
 import com.ccnu.bbs.VO.ArticleVO;
 import com.ccnu.bbs.VO.ResultVO;
 import com.ccnu.bbs.entity.Article;
 import com.ccnu.bbs.enums.ResultEnum;
 import com.ccnu.bbs.exception.BBSException;
 import com.ccnu.bbs.forms.ArticleForm;
+import com.ccnu.bbs.forms.CollectForm;
+import com.ccnu.bbs.forms.LikeArticleForm;
 import com.ccnu.bbs.service.Impl.ArticleServiceImpl;
+import com.ccnu.bbs.service.Impl.CollectServiceImpl;
+import com.ccnu.bbs.service.Impl.LikeServiceImpl;
 import com.ccnu.bbs.utils.ResultVOUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,6 +32,11 @@ public class ArticleController {
     @Autowired
     private ArticleServiceImpl articleService;
 
+    @Autowired
+    private LikeServiceImpl likeService;
+
+    @Autowired
+    private CollectServiceImpl collectService;
 
     /**
      * 帖子列表
@@ -47,15 +54,15 @@ public class ArticleController {
 
     /**
      * 图片上传
-     * @param multipartFiles
+     * @param multipartFile
      * @return
      */
     @PostMapping("/upload")
-    public ResultVO upload(@RequestParam MultipartFile[] multipartFiles){
+    public ResultVO upload(@RequestParam MultipartFile multipartFile){
         // 1.进行图片上传
         try {
-            List<String> imgUrls = articleService.uploadImg(Arrays.asList(multipartFiles));
-            return ResultVOUtil.success(imgUrls);
+            String imgUrl = articleService.uploadImg(multipartFile);
+            return ResultVOUtil.success(imgUrl);
         }catch (IOException e){
             return ResultVOUtil.error(ResultEnum.UPLOAD_ERROR.getCode(), e.getMessage());
         }
@@ -94,5 +101,33 @@ public class ArticleController {
             return ResultVOUtil.error(ResultEnum.ARTICLE_ID_ERROR.getCode(), ResultEnum.ARTICLE_ID_ERROR.getMessage());
         }
         return ResultVOUtil.success(articleService.findArticle(articleId));
+    }
+
+    @PostMapping("/like")
+    public ResultVO like(@RequestAttribute String userId,
+                         @RequestBody LikeArticleForm likeArticleForm,
+                         BindingResult bindingResult){
+        // 1.查看表单参数是否有问题
+        if (bindingResult.hasErrors()){
+            log.error("【帖子点赞】参数不正确, likeArticleForm={}", likeArticleForm);
+            throw new BBSException(ResultEnum.PARAM_ERROR.getCode(),
+                    bindingResult.getFieldError().getDefaultMessage());
+        }
+        likeService.updateLikeArticle(likeArticleForm, userId);
+        return ResultVOUtil.success();
+    }
+
+    @PostMapping("/collect")
+    public ResultVO collect(@RequestAttribute String userId,
+                            @RequestBody CollectForm collectForm,
+                            BindingResult bindingResult){
+        // 1.查看表单参数是否有问题
+        if (bindingResult.hasErrors()){
+            log.error("【帖子收藏】参数不正确, likeArticleForm={}", collectForm);
+            throw new BBSException(ResultEnum.PARAM_ERROR.getCode(),
+                    bindingResult.getFieldError().getDefaultMessage());
+        }
+        collectService.updateCollectArticle(collectForm, userId);
+        return ResultVOUtil.success();
     }
 }

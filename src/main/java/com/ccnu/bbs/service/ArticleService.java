@@ -19,7 +19,7 @@ public interface ArticleService {
     Article createArticle(String userId, ArticleForm articleForm);
 
     /** 上传图片. */
-    List<String> uploadImg(List<MultipartFile> multipartFiles) throws IOException;
+    String uploadImg(MultipartFile multipartFile) throws IOException;
 
     /** 查找帖子. */
     ArticleVO findArticle(String articleId);

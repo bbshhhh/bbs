@@ -2,6 +2,8 @@ package com.ccnu.bbs.service;
 
 import com.ccnu.bbs.entity.LikeArticle;
 import com.ccnu.bbs.entity.LikeComment;
+import com.ccnu.bbs.forms.LikeArticleForm;
+import com.ccnu.bbs.forms.LikeCommentForm;
 
 public interface LikeService {
 
@@ -12,8 +14,8 @@ public interface LikeService {
     Boolean isCommentLike(String commentId, String userId);
 
     /** 帖子点赞更新. */
-    LikeArticle updateLikeArticle(String articleId, String userId);
+    LikeArticle updateLikeArticle(LikeArticleForm likeArticleForm, String userId);
 
     /** 评论点赞更新. */
-    LikeComment updateLikeComment(String commentId, String userId);
+    LikeComment updateLikeComment(LikeCommentForm likeCommentForm, String userId);
 }

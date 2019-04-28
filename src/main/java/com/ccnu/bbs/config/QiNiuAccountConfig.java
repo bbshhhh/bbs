@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 @Data
 @Component
 @ConfigurationProperties(prefix = "qiniu")
-public class QiNiuConfig {
+public class QiNiuAccountConfig {
 
     private String accessKey;
 

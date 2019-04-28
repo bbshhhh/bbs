@@ -9,6 +9,9 @@ import java.util.List;
 
 public interface CommentService {
 
+    /** 热评列表. */
+    List<CommentVO> hotArticleComment(String articleId);
+
     /** 查询评论列表. */
     List<CommentVO> articleComment(String articleId, Pageable pageable);
 

@@ -3,6 +3,8 @@ package com.ccnu.bbs.service.Impl;
 import com.ccnu.bbs.entity.LikeArticle;
 import com.ccnu.bbs.entity.LikeComment;
 import com.ccnu.bbs.enums.LikeEnum;
+import com.ccnu.bbs.forms.LikeArticleForm;
+import com.ccnu.bbs.forms.LikeCommentForm;
 import com.ccnu.bbs.repository.LikeArticleRepository;
 import com.ccnu.bbs.repository.LikeCommentRepository;
 import com.ccnu.bbs.service.LikeService;
@@ -46,8 +48,8 @@ public class LikeServiceImpl implements LikeService {
     /**
      * 帖子点赞更新
      */
-    @CacheEvict(cacheNames = "LikeArticle", key = "(#articleId) + '-' + (#userId)")
-    public LikeArticle updateLikeArticle(String articleId, String userId) {
+    @CacheEvict(cacheNames = "LikeArticle", key = "(#likeArticleForm.likeArticleId) + '-' + (#userId)")
+    public LikeArticle updateLikeArticle(LikeArticleForm likeArticleForm, String userId) {
         return null;
     }
 
@@ -55,8 +57,8 @@ public class LikeServiceImpl implements LikeService {
     /**
      * 评论点赞更新
      */
-    @CacheEvict(cacheNames = "LikeComment", key = "(#commentId) + '-' + (#userId)")
-    public LikeComment updateLikeComment(String commentId, String userId) {
+    @CacheEvict(cacheNames = "LikeComment", key = "(#likeCommentForm.likeCommentId) + '-' + (#userId)")
+    public LikeComment updateLikeComment(LikeCommentForm likeCommentForm, String userId) {
         return null;
     }
 }

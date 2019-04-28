@@ -8,12 +8,17 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import javax.transaction.Transactional;
+import java.util.List;
 
 public interface CommentRepository extends JpaRepository<Comment, String> {
 
     // 查看某个帖子的评论(按照点赞数降序排列)
     @Query("select c from Comment c where c.commentArticleId = ?1 order by c.commentLikeNum desc")
-    Page<Comment> findArticleComment(String articleId, Pageable pageable);
+    List<Comment> findArticleCommentByLike(String articleId);
+
+    // 查看某个帖子的评论(按评论时间升序排列)
+    @Query("select c from Comment c where c.commentArticleId = ?1 order by c.commentTime asc")
+    Page<Comment> findArticleCommentByTime(String articleId, Pageable pageable);
 
     // 查看某个用户的评论((按照评论时间降序排列)
     @Query("select c from Comment c where c.commentUserId = ?1 order by c.commentTime desc")

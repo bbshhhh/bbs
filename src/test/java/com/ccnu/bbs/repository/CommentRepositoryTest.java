@@ -1,6 +1,5 @@
 package com.ccnu.bbs.repository;
 
-import com.ccnu.bbs.entity.Comment;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +17,7 @@ public class CommentRepositoryTest {
 
     @Test
     public void findArticleCommentTest() {
-        commentRepository.findArticleComment("1", PageRequest.of(1, 1)).forEach(System.out::println);
+        commentRepository.findArticleCommentByLike("1").forEach(System.out::println);
     }
 
     @Test

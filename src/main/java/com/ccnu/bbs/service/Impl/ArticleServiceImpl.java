@@ -11,9 +11,9 @@ import com.ccnu.bbs.utils.KeyUtil;
 import com.ccnu.bbs.utils.QiniuCloudUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -40,7 +40,10 @@ public class ArticleServiceImpl implements ArticleService {
     private LikeServiceImpl likeService;
 
     @Autowired
-    private CollectRepository collectRepository;
+    private CollectServiceImpl collectService;
+
+    @Autowired
+    private RedisTemplate<Object, Object> redisTemplate;
 
     @Override
     /**
@@ -87,33 +90,39 @@ public class ArticleServiceImpl implements ArticleService {
     /**
      * 上传图片
      */
-    public List<String> uploadImg(List<MultipartFile> multipartFiles) throws IOException{
-        // 1.创建存储url的列表
-        List<String> imgUrls = new ArrayList();
-        // 2.判断文件列表是否为空
-        if (multipartFiles.isEmpty()){
-            return imgUrls;
+    public String uploadImg(MultipartFile multipartFile) throws IOException{
+        // 1.创建存储url的字符串
+        String imgUrl = new String();
+        // 2.判断文件是否为空
+        if (multipartFile.isEmpty()){
+            return imgUrl;
         }
         // 3.使用七牛云工具类进行上传
         QiniuCloudUtil qiniuCloudUtil = new QiniuCloudUtil();
-        for (MultipartFile multipartFile : multipartFiles){
-            FileInputStream inputStream = (FileInputStream) multipartFile.getInputStream();
-            // 4.使用KeyUtil生成唯一主键作为key进行上传，返回图片url
-            String imgUrl = qiniuCloudUtil.uploadQNImg(inputStream, "bbs/" + KeyUtil.genUniqueKey());
-            imgUrls.add(imgUrl);
-        }
-        return imgUrls;
+        FileInputStream inputStream = (FileInputStream) multipartFile.getInputStream();
+        // 4.使用KeyUtil生成唯一主键作为key进行上传，返回图片url
+        imgUrl = qiniuCloudUtil.uploadQNImg(inputStream, "bbs/" + KeyUtil.genUniqueKey());
+        return imgUrl;
     }
 
     @Override
     /**
      * 查看文章
      */
-    @Cacheable(cacheNames = "Article", key = "#articleId")
     public ArticleVO findArticle(String articleId) {
-        Article article = articleRepository.findArticle(articleId);
+        Article article;
+        // 1.从redis中拿出缓存或者从数据库中查找
+        if (redisTemplate.hasKey("Article::" + articleId)){
+            article = (Article) redisTemplate.opsForValue().get("Article::" + articleId);
+        }
+        else {
+            article = articleRepository.findArticle(articleId);
+        }
         ArticleVO articleVO = null;
+        // 2.如果存在这篇帖子，将帖子浏览数+1，存入redis中
         if (article != null){
+            article.setArticleViewNum(article.getArticleViewNum() + 1);
+            redisTemplate.opsForValue().set("Article::" + articleId, article);
             articleVO = article2articleVO(article, article.getArticleUserId());
         }
         return articleVO;
@@ -142,13 +151,7 @@ public class ArticleServiceImpl implements ArticleService {
         // 查看文章是否被当前用户点赞
         articleVO.setIsLike(likeService.isArticleLike(article.getArticleId(), userId));
         // 查看文章是否被当前用户收藏
-        Collect collect = collectRepository.findCollect(article.getArticleId(), userId);
-        if (collect != null){
-            articleVO.setIsCollect(true);
-        }
-        else {
-            articleVO.setIsCollect(false);
-        }
+        articleVO.setIsCollect(collectService.isArticleCollect(article.getArticleId(), userId));
         return articleVO;
     }
 
