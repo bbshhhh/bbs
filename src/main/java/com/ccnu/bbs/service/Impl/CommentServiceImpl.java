@@ -14,6 +14,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -61,13 +62,13 @@ public class CommentServiceImpl implements CommentService {
     /**
      * 查询帖子评论列表
      */
-    public List<CommentVO> articleComment(String articleId, Pageable pageable) {
+    public Page<CommentVO> articleComment(String articleId, Pageable pageable) {
         // 1.根据帖子id查询评论，并按照评论时间升序排列
         Page<Comment> comments = commentRepository.findArticleCommentByTime(articleId, pageable);
         // 2.对每一个评论加入评论作者信息和回复信息
         List<CommentVO> commentVOList = comments.stream().
                 map(e -> comment2commentVO(e.getCommentUserId(), e)).collect(Collectors.toList());
-        return commentVOList;
+        return new PageImpl(commentVOList, pageable, comments.getTotalElements());
     }
 
     @Override

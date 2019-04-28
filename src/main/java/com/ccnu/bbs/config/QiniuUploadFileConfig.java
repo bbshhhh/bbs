@@ -48,6 +48,10 @@ public class QiniuUploadFileConfig {
         return new BucketManager(auth(), qiniuConfig());
     }
 
+    /**
+     * Jason转换
+     * @return
+     */
     @Bean
     public Gson gson() {
         return new Gson();

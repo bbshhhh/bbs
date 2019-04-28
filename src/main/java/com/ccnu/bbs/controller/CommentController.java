@@ -12,6 +12,7 @@ import com.ccnu.bbs.service.Impl.LikeServiceImpl;
 import com.ccnu.bbs.utils.ResultVOUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -38,7 +39,7 @@ public class CommentController {
         if (articleId == null||articleId.isEmpty()){
             return ResultVOUtil.error(ResultEnum.ARTICLE_ID_ERROR.getCode(), ResultEnum.ARTICLE_ID_ERROR.getMessage());
         }
-        List<CommentVO> commentVOList = commentService.articleComment(articleId, PageRequest.of(page - 1, size));
+        Page<CommentVO> commentVOList = commentService.articleComment(articleId, PageRequest.of(page - 1, size));
         return ResultVOUtil.success(commentVOList);
     }
 

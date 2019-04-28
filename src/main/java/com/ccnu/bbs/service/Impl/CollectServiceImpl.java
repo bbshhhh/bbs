@@ -1,16 +1,13 @@
 package com.ccnu.bbs.service.Impl;
 
-import com.ccnu.bbs.entity.Article;
 import com.ccnu.bbs.entity.Collect;
 import com.ccnu.bbs.enums.CollectEnum;
 import com.ccnu.bbs.forms.CollectForm;
-import com.ccnu.bbs.repository.ArticleRepository;
 import com.ccnu.bbs.repository.CollectRepository;
 import com.ccnu.bbs.service.CollectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 @Service

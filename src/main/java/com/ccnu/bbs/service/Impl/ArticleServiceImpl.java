@@ -2,16 +2,15 @@ package com.ccnu.bbs.service.Impl;
 
 import com.ccnu.bbs.VO.ArticleVO;
 import com.ccnu.bbs.entity.Article;
-import com.ccnu.bbs.entity.Collect;
 import com.ccnu.bbs.entity.User;
 import com.ccnu.bbs.forms.ArticleForm;
 import com.ccnu.bbs.repository.*;
 import com.ccnu.bbs.service.ArticleService;
 import com.ccnu.bbs.utils.KeyUtil;
-import com.ccnu.bbs.utils.QiniuCloudUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -43,13 +42,16 @@ public class ArticleServiceImpl implements ArticleService {
     private CollectServiceImpl collectService;
 
     @Autowired
+    private QiniuServiceImpl qiniuService;
+
+    @Autowired
     private RedisTemplate<Object, Object> redisTemplate;
 
     @Override
     /**
      * 帖子列表
      */
-    public List<ArticleVO> allArticle(Pageable pageable) {
+    public Page<ArticleVO> allArticle(Pageable pageable) {
         // 1.查找出帖子列表并按热度排序
         Page<Article> articles = articleRepository.findAll(pageable);
         List<ArticleVO> articleVOList = new ArrayList();
@@ -58,7 +60,7 @@ public class ArticleServiceImpl implements ArticleService {
             ArticleVO articleVO = article2articleVO(article, article.getArticleUserId());
             articleVOList.add(articleVO);
         }
-        return articleVOList;
+        return new PageImpl(articleVOList, pageable, articles.getTotalElements());
     }
 
     @Override
@@ -97,11 +99,10 @@ public class ArticleServiceImpl implements ArticleService {
         if (multipartFile.isEmpty()){
             return imgUrl;
         }
-        // 3.使用七牛云工具类进行上传
-        QiniuCloudUtil qiniuCloudUtil = new QiniuCloudUtil();
+        // 3.获得文件二进制流
         FileInputStream inputStream = (FileInputStream) multipartFile.getInputStream();
         // 4.使用KeyUtil生成唯一主键作为key进行上传，返回图片url
-        imgUrl = qiniuCloudUtil.uploadQNImg(inputStream, "bbs/" + KeyUtil.genUniqueKey());
+        imgUrl = qiniuService.uploadFile(inputStream, "bbs/" + KeyUtil.genUniqueKey());
         return imgUrl;
     }
 

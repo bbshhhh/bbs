@@ -14,6 +14,7 @@ import com.ccnu.bbs.service.Impl.LikeServiceImpl;
 import com.ccnu.bbs.utils.ResultVOUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -48,7 +49,7 @@ public class ArticleController {
     public ResultVO list(@RequestParam(value = "page", defaultValue = "1") Integer page,
                          @RequestParam(value = "size", defaultValue = "10") Integer size){
         // 查询帖子列表
-        List<ArticleVO> articles = articleService.allArticle(PageRequest.of(page - 1, size));
+        Page<ArticleVO> articles = articleService.allArticle(PageRequest.of(page - 1, size));
         return ResultVOUtil.success(articles);
     }
 

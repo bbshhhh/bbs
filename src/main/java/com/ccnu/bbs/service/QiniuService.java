@@ -17,7 +17,7 @@ public interface QiniuService {
      * @return
      * @throws QiniuException
      */
-    Response uploadFile(File file, String key) throws QiniuException;
+    String uploadFile(File file, String key) throws QiniuException;
 
     /**
      * 上传文件
@@ -28,7 +28,7 @@ public interface QiniuService {
      * @return
      * @throws QiniuException
      */
-    Response uploadFile(InputStream inputStream, String key) throws QiniuException;
+    String uploadFile(InputStream inputStream, String key) throws QiniuException;
 
     /**
      * 删除

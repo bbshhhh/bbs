@@ -41,7 +41,7 @@ wechat:
 qiniu:
   accessKey: xCz0OKEZj4Xz0cWyF-pKwxgL8qLAeJwgDqOZTp3c
   secretKey: 2rw9fk61IK5J2jpB52E1coG8wrjjQcYywkA5G4u8
-  bucket: Image
+  bucket: image
   path: http://img.ccnunercel.cn
 server:
   servlet:

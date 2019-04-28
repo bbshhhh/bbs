@@ -13,7 +13,7 @@ import java.util.List;
 public interface ArticleService {
 
     /** 查询帖子列表. */
-    List<ArticleVO> allArticle(Pageable pageable);
+    Page<ArticleVO> allArticle(Pageable pageable);
 
     /** 创建帖子. */
     Article createArticle(String userId, ArticleForm articleForm);
