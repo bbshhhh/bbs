@@ -23,4 +23,10 @@ public interface ArticleService {
 
     /** 查找帖子. */
     ArticleVO findArticle(String articleId);
+
+    /** 查找用户发表的帖子. */
+    Page<ArticleVO> findUserArticle(String userId, Pageable pageable);
+
+    /** 查找用户收藏的帖子. */
+    Page<ArticleVO> findCollectArticle(String userId, Pageable pageable);
 }

@@ -21,9 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 
 @RestController
 @Slf4j
@@ -95,6 +93,11 @@ public class ArticleController {
         return ResultVOUtil.success(map);
     }
 
+    /**
+     * 帖子内容
+     * @param articleId
+     * @return
+     */
     @GetMapping("/content")
     public ResultVO content(@RequestParam String articleId){
         // 查询帖子内容
@@ -104,6 +107,13 @@ public class ArticleController {
         return ResultVOUtil.success(articleService.findArticle(articleId));
     }
 
+    /**
+     * 帖子点赞
+     * @param userId
+     * @param likeArticleForm
+     * @param bindingResult
+     * @return
+     */
     @PostMapping("/like")
     public ResultVO like(@RequestAttribute String userId,
                          @RequestBody LikeArticleForm likeArticleForm,
@@ -118,6 +128,13 @@ public class ArticleController {
         return ResultVOUtil.success();
     }
 
+    /**
+     * 帖子收藏
+     * @param userId
+     * @param collectForm
+     * @param bindingResult
+     * @return
+     */
     @PostMapping("/collect")
     public ResultVO collect(@RequestAttribute String userId,
                             @RequestBody CollectForm collectForm,
@@ -130,5 +147,36 @@ public class ArticleController {
         }
         collectService.updateCollectArticle(collectForm, userId);
         return ResultVOUtil.success();
+    }
+
+    /**
+     * 我的帖子
+     * @param userId
+     * @param page
+     * @param size
+     * @return
+     */
+    @GetMapping("/myArticle")
+    public ResultVO myArticle(@RequestAttribute String userId,
+                              @RequestParam(value = "page", defaultValue = "1") Integer page,
+                              @RequestParam(value = "size", defaultValue = "10") Integer size){
+        // 查询用户帖子
+        Page<ArticleVO> articles = articleService.findUserArticle(userId, PageRequest.of(page - 1, size));
+        return ResultVOUtil.success(articles);
+    }
+
+    /**
+     * 我的收藏
+     * @param userId
+     * @param page
+     * @param size
+     * @return
+     */
+    @GetMapping("/myCollect")
+    public ResultVO myCollect(@RequestAttribute String userId,
+                              @RequestParam(value = "page", defaultValue = "1") Integer page,
+                              @RequestParam(value = "size", defaultValue = "10") Integer size){
+        Page<ArticleVO> articles = articleService.findCollectArticle(userId, PageRequest.of(page - 1, size));
+        return ResultVOUtil.success(articles);
     }
 }

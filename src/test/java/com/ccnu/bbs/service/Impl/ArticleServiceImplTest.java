@@ -23,7 +23,7 @@ public class ArticleServiceImplTest {
 
     @Test
     public void listArticle() {
-        List<ArticleVO> res = articleService.allArticle(PageRequest.of(0, 3));
-        Assert.assertNotEquals(0, res.size());
+        Page<ArticleVO> res = articleService.allArticle(PageRequest.of(0, 3));
+        Assert.assertNotEquals(0, res.getTotalElements());
     }
 }

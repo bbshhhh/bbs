@@ -18,9 +18,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -54,12 +54,9 @@ public class ArticleServiceImpl implements ArticleService {
     public Page<ArticleVO> allArticle(Pageable pageable) {
         // 1.查找出帖子列表并按热度排序
         Page<Article> articles = articleRepository.findAll(pageable);
-        List<ArticleVO> articleVOList = new ArrayList();
         // 2.对每一篇帖子进行拼装
-        for (Article article : articles){
-            ArticleVO articleVO = article2articleVO(article, article.getArticleUserId());
-            articleVOList.add(articleVO);
-        }
+        List<ArticleVO> articleVOList = articles.stream().
+                map(e -> article2articleVO(e, e.getArticleId())).collect(Collectors.toList());
         return new PageImpl(articleVOList, pageable, articles.getTotalElements());
     }
 
@@ -129,6 +126,32 @@ public class ArticleServiceImpl implements ArticleService {
         return articleVO;
     }
 
+    @Override
+    /**
+     * 查找用户发表的帖子
+     */
+    public Page<ArticleVO> findUserArticle(String userId, Pageable pageable) {
+        // 1.查找用户发表的帖子
+        Page<Article> articles = articleRepository.findUserArticle(userId, pageable);
+        // 2.对每一篇帖子进行拼装
+        List<ArticleVO> articleVOList = articles.stream().
+                map(e -> article2articleVO(e, e.getArticleId())).collect(Collectors.toList());
+        return new PageImpl(articleVOList, pageable, articles.getTotalElements());
+    }
+
+    @Override
+    /**
+     * 查找用户收藏的帖子
+     */
+    public Page<ArticleVO> findCollectArticle(String userId, Pageable pageable) {
+        // 1.查找用户收藏的帖子
+        Page<Article> articles = articleRepository.findUserCollect(userId, pageable);
+        // 2.对每一篇帖子进行拼装
+        List<ArticleVO> articleVOList = articles.stream().
+                map(e -> article2articleVO(e, e.getArticleId())).collect(Collectors.toList());
+        return new PageImpl(articleVOList, pageable, articles.getTotalElements());
+    }
+
     /**
      * 文章内容拼装
      * @param article
@@ -137,7 +160,7 @@ public class ArticleServiceImpl implements ArticleService {
      */
     private ArticleVO article2articleVO(Article article, String userId){
         ArticleVO articleVO = new ArticleVO();
-        // 获得文章信息
+        // 获得帖子信息
         BeanUtils.copyProperties(article, articleVO);
         // 查找作者信息
         User user = userService.findUser(article.getArticleUserId());
@@ -149,9 +172,9 @@ public class ArticleServiceImpl implements ArticleService {
         // 查找关键词信息
         List<String> keywords = keywordService.articleKeywords(article.getArticleId());
         articleVO.setKeywords(keywords);
-        // 查看文章是否被当前用户点赞
+        // 查看帖子是否被当前用户点赞
         articleVO.setIsLike(likeService.isArticleLike(article.getArticleId(), userId));
-        // 查看文章是否被当前用户收藏
+        // 查看帖子是否被当前用户收藏
         articleVO.setIsCollect(collectService.isArticleCollect(article.getArticleId(), userId));
         return articleVO;
     }
