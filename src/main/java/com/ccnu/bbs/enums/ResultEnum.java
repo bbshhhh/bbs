@@ -14,7 +14,10 @@ public enum  ResultEnum {
     UPLOAD_ERROR(6, "文件上传出错"),
     ARTICLE_ID_ERROR(7, "帖子id不能为空"),
     COMMENT_ID_ERROR(8, "评论id不能为空"),
-    USER_NULL(9, "用户不存在")
+    USER_NOT_EXIT(9, "用户不存在"),
+    ARTICLE_NOT_EXIT(10, "帖子不存在"),
+    COMMENT_NOT_EXIT(11, "评论不存在"),
+    REPLY_NOT_EXIT(12, "回复不存在")
     ;
 
     private Integer code;

@@ -4,7 +4,11 @@ import com.ccnu.bbs.VO.CommentVO;
 import com.ccnu.bbs.VO.ReplyVO;
 import com.ccnu.bbs.entity.Article;
 import com.ccnu.bbs.entity.Comment;
+import com.ccnu.bbs.entity.Message;
 import com.ccnu.bbs.entity.User;
+import com.ccnu.bbs.enums.MessageEnum;
+import com.ccnu.bbs.enums.ResultEnum;
+import com.ccnu.bbs.exception.BBSException;
 import com.ccnu.bbs.forms.CommentForm;
 import com.ccnu.bbs.repository.ArticleRepository;
 import com.ccnu.bbs.repository.CommentRepository;
@@ -40,6 +44,9 @@ public class CommentServiceImpl implements CommentService {
 
     @Autowired
     private LikeServiceImpl likeService;
+
+    @Autowired
+    private MessageServiceImpl messageService;
 
     @Autowired
     private RedisTemplate<Object, Object> redisTemplate;
@@ -97,6 +104,16 @@ public class CommentServiceImpl implements CommentService {
             article.setArticleCommentNum(article.getArticleCommentNum() + 1);
             redisTemplate.opsForValue().set("Article::" + comment.getCommentArticleId(), article);
         }
+        // 6.创建评论消息，以通知被评论者
+        Message message = new Message();
+        message.setArticleId(article.getArticleId());
+        message.setCommentId(comment.getCommentId());
+        message.setMessageType(MessageEnum.REPLY_MESSAGE.getCode());
+        message.setReceiverUserId(article.getArticleUserId());
+        message.setSenderUserId(userId);
+        message.setRepliedContent(article.getArticleContent());
+        message.setMessageContent(comment.getCommentContent());
+        messageService.createMessage(message);
         return commentRepository.save(comment);
     }
 
@@ -108,9 +125,10 @@ public class CommentServiceImpl implements CommentService {
     public CommentVO findComment(String commentId){
         Comment comment = commentRepository.findComment(commentId);
         CommentVO commentVO = null;
-        if (comment != null){
-            commentVO = comment2commentVO(comment.getCommentUserId(), comment);
+        if (comment == null){
+            throw new BBSException(ResultEnum.COMMENT_NOT_EXIT);
         }
+        commentVO = comment2commentVO(comment.getCommentUserId(), comment);
         return commentVO;
     }
 

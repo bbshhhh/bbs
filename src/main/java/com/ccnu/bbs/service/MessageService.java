@@ -12,4 +12,5 @@ public interface MessageService {
     /** 查看是否有新消息. */
     Boolean haveMessage(String userId, Integer messageType);
     /** 保存新消息. */
+    Message createMessage(Message message);
 }

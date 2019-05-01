@@ -20,4 +20,8 @@ public interface KeywordRepository extends JpaRepository<Keyword, Integer> {
     @Query("select new map(k.keywordName, b.browseCount) from Keyword k, com.ccnu.bbs.entity.Browse b where " +
             "k.keywordId = b.browseKeywordId and b.browseUserId = ?1 order by b.browseCount desc")
     List<Map<String, Object>> findUserKeyword(String userId);
+
+    // 查找关键词是否出现过
+    @Query("select k from Keyword k where k.keywordName = ?1")
+    Keyword findKeyword(String keyword);
 }

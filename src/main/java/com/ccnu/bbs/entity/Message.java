@@ -35,7 +35,7 @@ public class Message {
     /** 消息内容. */
     String messageContent;
     /** 消息是否已读,0为未读,1为已读. */
-    Integer isRead;
+    Integer isRead = 0;
     /** 消息创建时间. */
     @CreatedDate
     Date messageTime;

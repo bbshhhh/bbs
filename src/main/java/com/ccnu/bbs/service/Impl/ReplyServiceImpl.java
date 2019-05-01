@@ -1,9 +1,15 @@
 package com.ccnu.bbs.service.Impl;
 
 import com.ccnu.bbs.VO.ReplyVO;
+import com.ccnu.bbs.entity.Comment;
+import com.ccnu.bbs.entity.Message;
 import com.ccnu.bbs.entity.Reply;
 import com.ccnu.bbs.entity.User;
+import com.ccnu.bbs.enums.MessageEnum;
+import com.ccnu.bbs.enums.ResultEnum;
+import com.ccnu.bbs.exception.BBSException;
 import com.ccnu.bbs.forms.ReplyForm;
+import com.ccnu.bbs.repository.CommentRepository;
 import com.ccnu.bbs.repository.ReplyRepository;
 import com.ccnu.bbs.service.ReplyService;
 import com.ccnu.bbs.utils.KeyUtil;
@@ -24,7 +30,13 @@ public class ReplyServiceImpl implements ReplyService {
     private ReplyRepository replyRepository;
 
     @Autowired
+    private CommentRepository commentRepository;
+
+    @Autowired
     private UserServiceImpl userService;
+
+    @Autowired
+    private MessageServiceImpl messageService;
 
     @Override
     /**
@@ -53,13 +65,31 @@ public class ReplyServiceImpl implements ReplyService {
      */
     public Reply createReply(ReplyForm replyForm, String userId) {
         Reply reply = new Reply();
+        String commentId = replyForm.getCommentId();
         BeanUtils.copyProperties(replyForm, reply);
         // 1.设置主键
         reply.setReplyId(KeyUtil.genUniqueKey());
         // 2.设置评论id
-        reply.setReplyCommentId(replyForm.getCommentId());
+        reply.setReplyCommentId(commentId);
         // 3.设置回复者
         reply.setReplyUserId(userId);
+        // 4.创建新消息，以通知被回复者
+        Message message = new Message();
+        // 找到被评论者所在帖子,将帖子id存入
+        Comment comment = commentRepository.findComment(commentId);
+        if (comment == null){
+            throw new BBSException(ResultEnum.COMMENT_NOT_EXIT);
+        }
+        message.setArticleId(comment.getCommentArticleId());
+        // 存入其他信息
+        message.setCommentId(comment.getCommentId());
+        message.setMessageType(MessageEnum.REPLY_MESSAGE.getCode());
+        message.setReceiverUserId(comment.getCommentUserId());
+        message.setSenderUserId(userId);
+        message.setRepliedContent(comment.getCommentContent());
+        message.setMessageContent(reply.getReplyContent());
+        messageService.createMessage(message);
+        // 保存回复
         return replyRepository.save(reply);
     }
 

@@ -3,6 +3,7 @@ package com.ccnu.bbs.service.Impl;
 import com.ccnu.bbs.VO.MessageVO;
 import com.ccnu.bbs.entity.Message;
 import com.ccnu.bbs.entity.User;
+import com.ccnu.bbs.enums.MessageStatusEnum;
 import com.ccnu.bbs.repository.MessageRepository;
 import com.ccnu.bbs.service.MessageService;
 import org.springframework.beans.BeanUtils;
@@ -12,7 +13,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -46,6 +46,14 @@ public class MessageServiceImpl implements MessageService {
         return newMessageCount > 0 ? true : false;
     }
 
+    @Override
+    /**
+     * 保存新消息
+     */
+    public Message createMessage(Message message) {
+        return messageRepository.save(message);
+    }
+
     /**
      * 消息内容拼装
      * @param message
@@ -60,6 +68,9 @@ public class MessageServiceImpl implements MessageService {
         User user = userService.findUser(message.getSenderUserId());
         messageVO.setSenderUserName(user.getUserName());
         messageVO.setSenderUserImg(user.getUserImg());
+        // 将消息设为已读,存入数据库
+        message.setIsRead(MessageStatusEnum.READ.getCode());
+        messageRepository.save(message);
         return messageVO;
     }
 }

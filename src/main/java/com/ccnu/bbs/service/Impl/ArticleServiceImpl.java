@@ -2,7 +2,11 @@ package com.ccnu.bbs.service.Impl;
 
 import com.ccnu.bbs.VO.ArticleVO;
 import com.ccnu.bbs.entity.Article;
+import com.ccnu.bbs.entity.Extract;
+import com.ccnu.bbs.entity.Keyword;
 import com.ccnu.bbs.entity.User;
+import com.ccnu.bbs.enums.ResultEnum;
+import com.ccnu.bbs.exception.BBSException;
 import com.ccnu.bbs.forms.ArticleForm;
 import com.ccnu.bbs.repository.*;
 import com.ccnu.bbs.service.ArticleService;
@@ -28,6 +32,9 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Autowired
     private ArticleRepository articleRepository;
+
+    @Autowired
+    private ExtractRepository extractRepository;
 
     @Autowired
     private UserServiceImpl userService;
@@ -82,6 +89,22 @@ public class ArticleServiceImpl implements ArticleService {
         BeanUtils.copyProperties(articleForm, article);
         article.setArticleId(KeyUtil.genUniqueKey());
         article.setArticleUserId(userId);
+        // 5.查看表单中的关键词,建立关键词与帖子关联
+        List<String> keywords = articleForm.getArticleKeywords();
+        if (keywords != null && !keywords.isEmpty()){
+            for (String keywordName : keywords){
+                // 查找该关键词是否出现过,未出现则新建
+                Keyword keyword = keywordService.findKeyword(keywordName);
+                if (keyword == null){
+                    keyword = keywordService.createKeyword(keywordName);
+                }
+                // 新建帖子和关键词的关联,并存入数据库
+                Extract extract = new Extract();
+                extract.setExtractArticleId(article.getArticleId());
+                extract.setExtractKeywordId(keyword.getKeywordId());
+                extractRepository.save(extract);
+            }
+        }
         return articleRepository.save(article);
     }
 
@@ -105,7 +128,7 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Override
     /**
-     * 查看文章
+     * 查看帖子
      */
     public ArticleVO findArticle(String articleId) {
         Article article;
@@ -117,12 +140,13 @@ public class ArticleServiceImpl implements ArticleService {
             article = articleRepository.findArticle(articleId);
         }
         ArticleVO articleVO = null;
-        // 2.如果存在这篇帖子，将帖子浏览数+1，存入redis中
-        if (article != null){
-            article.setArticleViewNum(article.getArticleViewNum() + 1);
-            redisTemplate.opsForValue().set("Article::" + articleId, article);
-            articleVO = article2articleVO(article, article.getArticleUserId());
+        if (article == null){
+            throw new BBSException(ResultEnum.ARTICLE_NOT_EXIT);
         }
+        // 2.如果存在这篇帖子，将帖子浏览数+1，存入redis中
+        article.setArticleViewNum(article.getArticleViewNum() + 1);
+        redisTemplate.opsForValue().set("Article::" + articleId, article);
+        articleVO = article2articleVO(article, article.getArticleUserId());
         return articleVO;
     }
 

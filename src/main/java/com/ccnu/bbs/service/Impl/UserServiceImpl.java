@@ -39,7 +39,9 @@ public class UserServiceImpl implements UserService {
     public User updateUser(WxMaUserInfo userInfo) {
         String userId = userInfo.getOpenId();
         User user = userRepository.findByUserId(userId);
-        if (user == null) throw new BBSException(ResultEnum.USER_NULL);
+        if (user == null){
+            throw new BBSException(ResultEnum.USER_NOT_EXIT);
+        }
         user.setUserName(userInfo.getNickName());
         user.setUserGender(Integer.valueOf(userInfo.getGender()));
         user.setUserCity(userInfo.getCity());
