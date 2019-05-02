@@ -21,12 +21,18 @@ public interface ArticleService {
     /** 上传图片. */
     String uploadImg(MultipartFile multipartFile) throws IOException;
 
-    /** 查找帖子. */
+    /** 浏览帖子. */
     ArticleVO findArticle(String articleId);
+
+    /** 查找帖子. */
+    Article getArticle(String articleId);
 
     /** 查找用户发表的帖子. */
     Page<ArticleVO> findUserArticle(String userId, Pageable pageable);
 
     /** 查找用户收藏的帖子. */
     Page<ArticleVO> findCollectArticle(String userId, Pageable pageable);
+
+    /** 从redis更新数据库. */
+    void updateArticleDatabase();
 }

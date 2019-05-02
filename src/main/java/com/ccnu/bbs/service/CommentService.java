@@ -19,6 +19,9 @@ public interface CommentService {
     /** 创建评论. */
     Comment createComment(String userId, CommentForm commentForm);
 
-    /** 查找评论. */
+    /** 查看评论. */
     CommentVO findComment(String commentId);
+
+    /** 从redis或数据库中得到评论. */
+    Comment getComment(String commentId);
 }

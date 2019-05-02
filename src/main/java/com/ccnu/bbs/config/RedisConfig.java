@@ -55,9 +55,9 @@ public class RedisConfig {
      * @return
      */
     @Bean
-    public RedisTemplate<Object, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
+    public RedisTemplate redisTemplate(RedisConnectionFactory redisConnectionFactory) {
         // 1.建立redis模板类
-        RedisTemplate<Object, Object> redisTemplate = new RedisTemplate<>();
+        RedisTemplate<String, Object> redisTemplate = new RedisTemplate();
         redisTemplate.setConnectionFactory(redisConnectionFactory);
         // 2.设置value的序列化规则和 key的序列化规则
         redisTemplate.setValueSerializer(valueSerializer());
@@ -66,6 +66,7 @@ public class RedisConfig {
         log.info("自定义RedisTemplate加载完成");
         return redisTemplate;
     }
+
 
     /**
      * 键的序列化方法

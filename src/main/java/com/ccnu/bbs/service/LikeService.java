@@ -18,4 +18,10 @@ public interface LikeService {
 
     /** 评论点赞更新. */
     LikeComment updateLikeComment(LikeCommentForm likeCommentForm, String userId);
+
+    /** 从redis更新帖子点赞到数据库. */
+    void updateLikeArticleDatabase();
+
+    /** 从redis更新评论点赞到数据库. */
+    void updateLikeCommentDatabase();
 }

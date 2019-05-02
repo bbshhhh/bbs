@@ -25,6 +25,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,7 +35,7 @@ public class CommentServiceImpl implements CommentService {
     private CommentRepository commentRepository;
 
     @Autowired
-    private ArticleRepository articleRepository;
+    private ArticleServiceImpl articleService;
 
     @Autowired
     private UserServiceImpl userService;
@@ -49,7 +50,7 @@ public class CommentServiceImpl implements CommentService {
     private MessageServiceImpl messageService;
 
     @Autowired
-    private RedisTemplate<Object, Object> redisTemplate;
+    private RedisTemplate<String, Object> redisTemplate;
 
     @Override
     /**
@@ -92,13 +93,7 @@ public class CommentServiceImpl implements CommentService {
         // 3.设置评论者
         comment.setCommentUserId(userId);
         // 4.在redis或数据库中查找帖子
-        Article article;
-        if (redisTemplate.hasKey("Article::" + comment.getCommentArticleId())){
-            article = (Article) redisTemplate.opsForValue().get("Article::" + comment.getCommentArticleId());
-        }
-        else {
-            article = articleRepository.findArticle(comment.getCommentArticleId());
-        }
+        Article article = articleService.getArticle(comment.getCommentArticleId());
         // 5.将帖子评论数+1，存入redis中
         if (article != null){
             article.setArticleCommentNum(article.getArticleCommentNum() + 1);
@@ -121,15 +116,30 @@ public class CommentServiceImpl implements CommentService {
     /**
      * 查看评论
      */
-    @Cacheable(cacheNames = "Comment", key = "#commentId")
     public CommentVO findComment(String commentId){
-        Comment comment = commentRepository.findComment(commentId);
-        CommentVO commentVO = null;
+        Comment comment = getComment(commentId);
+        CommentVO commentVO;
+        commentVO = comment2commentVO(comment.getCommentUserId(), comment);
+        return commentVO;
+    }
+
+    @Override
+    /**
+     * 从redis或数据库中得到评论
+     */
+    public Comment getComment(String commentId) {
+        Comment comment;
+        if (redisTemplate.hasKey("Comment::" + commentId)){
+            comment = (Comment) redisTemplate.opsForValue().get("Comment::" + commentId);
+        }
+        else {
+            comment = commentRepository.findComment(commentId);
+        }
         if (comment == null){
             throw new BBSException(ResultEnum.COMMENT_NOT_EXIT);
         }
-        commentVO = comment2commentVO(comment.getCommentUserId(), comment);
-        return commentVO;
+        redisTemplate.opsForValue().set("Comment::" + commentId, comment,1, TimeUnit.DAYS);
+        return comment;
     }
 
     /**

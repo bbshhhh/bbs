@@ -23,7 +23,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 
@@ -52,7 +54,12 @@ public class ArticleServiceImpl implements ArticleService {
     private QiniuServiceImpl qiniuService;
 
     @Autowired
-    private RedisTemplate<Object, Object> redisTemplate;
+    private RedisTemplate<String, Object> redisTemplate;
+
+    private static final Double VIEW_NUM_WEIGHT = 1.0;
+    private static final Double COMMENT_NUM_WEIGHT = 2.0;
+    private static final Double LIKE_NUM_WEIGHT = 3.0;
+    private static final Double TIME_WEIGHT = - 1.0;
 
     @Override
     /**
@@ -105,6 +112,8 @@ public class ArticleServiceImpl implements ArticleService {
                 extractRepository.save(extract);
             }
         }
+        // 6.计算帖子热度
+        article = calcHotNum(article);
         return articleRepository.save(article);
     }
 
@@ -128,26 +137,34 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Override
     /**
-     * 查看帖子
+     * 浏览帖子
      */
     public ArticleVO findArticle(String articleId) {
+        Article article = getArticle(articleId);
+        ArticleVO articleVO = null;
+        // 2.如果存在这篇帖子，将帖子浏览数+1，存入redis中
+        article.setArticleViewNum(article.getArticleViewNum() + 1);
+        redisTemplate.opsForValue().set("Article::" + articleId, article);
+        articleVO = article2articleVO(article, article.getArticleUserId());
+        return articleVO;
+    }
+
+    @Override
+    /**
+     * 从redis中或数据库中查找帖子
+     */
+    public Article getArticle(String articleId){
         Article article;
-        // 1.从redis中拿出缓存或者从数据库中查找
         if (redisTemplate.hasKey("Article::" + articleId)){
             article = (Article) redisTemplate.opsForValue().get("Article::" + articleId);
         }
         else {
             article = articleRepository.findArticle(articleId);
         }
-        ArticleVO articleVO = null;
         if (article == null){
             throw new BBSException(ResultEnum.ARTICLE_NOT_EXIT);
         }
-        // 2.如果存在这篇帖子，将帖子浏览数+1，存入redis中
-        article.setArticleViewNum(article.getArticleViewNum() + 1);
-        redisTemplate.opsForValue().set("Article::" + articleId, article);
-        articleVO = article2articleVO(article, article.getArticleUserId());
-        return articleVO;
+        return article;
     }
 
     @Override
@@ -174,6 +191,34 @@ public class ArticleServiceImpl implements ArticleService {
         List<ArticleVO> articleVOList = articles.stream().
                 map(e -> article2articleVO(e, e.getArticleId())).collect(Collectors.toList());
         return new PageImpl(articleVOList, pageable, articles.getTotalElements());
+    }
+
+    @Override
+    /**
+     * 从redis更新帖子数据
+     */
+    public void updateArticleDatabase() {
+        // 1.找到所有关于帖子的key
+        Set<String> articleKeys = redisTemplate.keys("Article::*");
+        for (String articleKey : articleKeys){
+            // 2.根据每一个key得到帖子
+            Article article = (Article) redisTemplate.opsForValue().get(articleKey);
+            // 3.更新帖子热度
+            article = calcHotNum(article);
+            // 4.保存帖子进数据库，并删除redis里的数据
+            articleRepository.save(article);
+            redisTemplate.delete(articleKey);
+        }
+        return;
+    }
+
+    private Article calcHotNum(Article article){
+        Double hotNum = LIKE_NUM_WEIGHT * article.getArticleLikeNum()
+                + VIEW_NUM_WEIGHT * article.getArticleViewNum()
+                + COMMENT_NUM_WEIGHT * article.getArticleCommentNum()
+                + TIME_WEIGHT * (System.currentTimeMillis() - article.getArticleCreateTime().getTime()) / 6000;
+        article.setArticleHotNum(hotNum);
+        return article;
     }
 
     /**

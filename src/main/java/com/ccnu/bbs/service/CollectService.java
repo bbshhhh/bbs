@@ -10,4 +10,7 @@ public interface CollectService {
 
     /** 帖子收藏更新. */
     Collect updateCollectArticle(CollectForm collectForm, String userId);
+
+    /** 从redis更新数据库. */
+    void updateCollectDatabase();
 }
