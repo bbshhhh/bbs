@@ -3,6 +3,7 @@ package com.ccnu.bbs.entity;
 import lombok.Data;
 import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.Entity;
@@ -15,6 +16,7 @@ import java.util.Date;
 @Entity
 @DynamicUpdate
 @EntityListeners(AuditingEntityListener.class)
+@Document(indexName="bbs",type="article")
 public class Article implements Serializable {
 
     /** 帖子id. */

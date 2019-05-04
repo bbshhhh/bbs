@@ -14,6 +14,9 @@ public interface ArticleService {
     /** 查询帖子列表. */
     Page<ArticleVO> allArticle(Pageable pageable);
 
+    /** 搜索帖子. */
+//    Page<ArticleVO> searchArticle(String searchKey, Pageable pageable);
+
     /** 创建帖子. */
     Article createArticle(String userId, ArticleForm articleForm);
 

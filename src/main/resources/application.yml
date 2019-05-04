@@ -11,6 +11,12 @@ spring:
           auto: update
         dialect: org.hibernate.dialect.MySQL5InnoDBDialect
     show-sql: true
+  data:
+    elasticsearch:
+      cluster-name: elasticsearch
+      cluster-nodes: 127.0.0.1:9300
+      repositories:
+        enabled: true
   ##redis配置，默认密码为空
   redis:
     host: localhost

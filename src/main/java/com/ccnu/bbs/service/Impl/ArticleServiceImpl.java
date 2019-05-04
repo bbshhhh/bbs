@@ -8,6 +8,7 @@ import com.ccnu.bbs.enums.ResultEnum;
 import com.ccnu.bbs.exception.BBSException;
 import com.ccnu.bbs.forms.ArticleForm;
 import com.ccnu.bbs.repository.*;
+import com.ccnu.bbs.searchRepository.ArticleSearchRepository;
 import com.ccnu.bbs.service.ArticleService;
 import com.ccnu.bbs.utils.KeyUtil;
 import org.springframework.beans.BeanUtils;
@@ -15,11 +16,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Arrays;
@@ -33,6 +34,9 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Autowired
     private ArticleRepository articleRepository;
+
+    @Autowired
+    private ArticleSearchRepository articleSearchRepository;
 
     @Autowired
     private UserServiceImpl userService;
@@ -66,6 +70,20 @@ public class ArticleServiceImpl implements ArticleService {
                 map(e -> article2articleVO(e, e.getArticleId())).collect(Collectors.toList());
         return new PageImpl(articleVOList, pageable, articles.getTotalElements());
     }
+
+//    @Override
+//    public Page<ArticleVO> searchArticle(String searchKey, Pageable pageable) {
+//        // 构建查询条件
+//        NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder();
+//        // 添加基本分词查询
+//        queryBuilder.withQuery(QueryBuilders.multiMatchQuery(searchKey,"articleTitle", "articleContent", "articleKeywords"));
+//        // 搜索，获取结果
+//        Page<Article> articles = articleSearchRepository.search(queryBuilder.build());
+//        // 2.对每一篇帖子进行拼装
+//        List<ArticleVO> articleVOList = articles.stream().
+//                map(e -> article2articleVO(e, e.getArticleId())).collect(Collectors.toList());
+//        return new PageImpl(articleVOList, pageable, articles.getTotalElements());
+//    }
 
     @Override
     /**
