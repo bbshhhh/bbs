@@ -17,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -71,19 +72,19 @@ public class ArticleServiceImpl implements ArticleService {
         return new PageImpl(articleVOList, pageable, articles.getTotalElements());
     }
 
-//    @Override
-//    public Page<ArticleVO> searchArticle(String searchKey, Pageable pageable) {
-//        // 构建查询条件
-//        NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder();
-//        // 添加基本分词查询
-//        queryBuilder.withQuery(QueryBuilders.multiMatchQuery(searchKey,"articleTitle", "articleContent", "articleKeywords"));
-//        // 搜索，获取结果
-//        Page<Article> articles = articleSearchRepository.search(queryBuilder.build());
-//        // 2.对每一篇帖子进行拼装
-//        List<ArticleVO> articleVOList = articles.stream().
-//                map(e -> article2articleVO(e, e.getArticleId())).collect(Collectors.toList());
-//        return new PageImpl(articleVOList, pageable, articles.getTotalElements());
-//    }
+    @Override
+    public Page<ArticleVO> searchArticle(String searchKey, Pageable pageable) {
+        // 构建查询条件
+        NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder();
+        // 添加基本分词查询
+        queryBuilder.withQuery(QueryBuilders.multiMatchQuery(searchKey,"articleTitle", "articleContent", "articleKeywords"));
+        // 搜索，获取结果
+        Page<Article> articles = articleSearchRepository.search(queryBuilder.build());
+        // 2.对每一篇帖子进行拼装
+        List<ArticleVO> articleVOList = articles.stream().
+                map(e -> article2articleVO(e, e.getArticleId())).collect(Collectors.toList());
+        return new PageImpl(articleVOList, pageable, articles.getTotalElements());
+    }
 
     @Override
     /**

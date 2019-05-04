@@ -30,7 +30,8 @@ public class ArticleSearchRepositoryTest {
         Page<Article> articles = articleRepository.findAll(PageRequest.of(0, 10));
         List<Article> articleList = new ArrayList();
         for (Article article : articles){
-            articleList.add(articleSearchRepository.save(article));
+            article = articleSearchRepository.save(article);
+            articleList.add(article);
         }
         assertNotEquals(0, articleList.size());
     }
