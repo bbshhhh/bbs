@@ -28,6 +28,8 @@ public class Article implements Serializable {
     private String articleContent;
     /** 帖子图片. */
     private String articleImg;
+    /** 帖子关键词. */
+    private String articleKeywords;
     /** 帖子浏览次数. */
     private Integer articleViewNum = 0;
     /** 帖子评论次数. */
@@ -39,4 +41,6 @@ public class Article implements Serializable {
     @CreatedDate
     /** 帖子发表时间. */
     private Date articleCreateTime;
+    /** 帖子是否被删除(0表示未删除,1表示已删除). */
+    private Integer articleIsDelete = 0;
 }

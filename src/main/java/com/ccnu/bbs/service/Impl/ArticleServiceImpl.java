@@ -2,9 +2,8 @@ package com.ccnu.bbs.service.Impl;
 
 import com.ccnu.bbs.VO.ArticleVO;
 import com.ccnu.bbs.entity.Article;
-import com.ccnu.bbs.entity.Extract;
-import com.ccnu.bbs.entity.Keyword;
 import com.ccnu.bbs.entity.User;
+import com.ccnu.bbs.enums.DeleteEnum;
 import com.ccnu.bbs.enums.ResultEnum;
 import com.ccnu.bbs.exception.BBSException;
 import com.ccnu.bbs.forms.ArticleForm;
@@ -18,12 +17,12 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -36,13 +35,7 @@ public class ArticleServiceImpl implements ArticleService {
     private ArticleRepository articleRepository;
 
     @Autowired
-    private ExtractRepository extractRepository;
-
-    @Autowired
     private UserServiceImpl userService;
-
-    @Autowired
-    private KeywordServiceImpl keywordService;
 
     @Autowired
     private LikeServiceImpl likeService;
@@ -78,6 +71,7 @@ public class ArticleServiceImpl implements ArticleService {
     /**
      * 创建帖子
      */
+    @Transactional
     public Article createArticle(String userId, ArticleForm articleForm){
         Article article = new Article();
         if (!articleForm.getImgUrls().isEmpty()){
@@ -92,29 +86,17 @@ public class ArticleServiceImpl implements ArticleService {
             // 3.将生成的图片url给帖子的图片字段
             article.setArticleImg(stringBuffer.toString());
         }
-        // 4.将帖子其余信息存入数据库中
+        // 4.将帖子其余信息保存
         BeanUtils.copyProperties(articleForm, article);
         article.setArticleId(KeyUtil.genUniqueKey());
         article.setArticleUserId(userId);
-        // 5.查看表单中的关键词,建立关键词与帖子关联
-        List<String> keywords = articleForm.getArticleKeywords();
-        if (keywords != null && !keywords.isEmpty()){
-            for (String keywordName : keywords){
-                // 查找该关键词是否出现过,未出现则新建
-                Keyword keyword = keywordService.findKeyword(keywordName);
-                if (keyword == null){
-                    keyword = keywordService.createKeyword(keywordName);
-                }
-                // 新建帖子和关键词的关联,并存入数据库
-                Extract extract = new Extract();
-                extract.setExtractArticleId(article.getArticleId());
-                extract.setExtractKeywordId(keyword.getKeywordId());
-                extractRepository.save(extract);
-            }
-        }
-        // 6.计算帖子热度
+        // 5.计算帖子热度
         article = calcHotNum(article);
-        return articleRepository.save(article);
+        // 6.将帖子存入数据库
+        article = articleRepository.save(article);
+        // 7.创建帖子需要从redis同步一遍帖子数据，以便排序
+        updateArticleDatabase();
+        return article;
     }
 
     @Override
@@ -139,9 +121,9 @@ public class ArticleServiceImpl implements ArticleService {
     /**
      * 浏览帖子
      */
-    public ArticleVO findArticle(String articleId) {
+    public ArticleVO findArticle(String articleId) throws BBSException {
         Article article = getArticle(articleId);
-        ArticleVO articleVO = null;
+        ArticleVO articleVO;
         // 2.如果存在这篇帖子，将帖子浏览数+1，存入redis中
         article.setArticleViewNum(article.getArticleViewNum() + 1);
         redisTemplate.opsForValue().set("Article::" + articleId, article);
@@ -153,18 +135,33 @@ public class ArticleServiceImpl implements ArticleService {
     /**
      * 从redis中或数据库中查找帖子
      */
-    public Article getArticle(String articleId){
+    public Article getArticle(String articleId) throws BBSException{
         Article article;
         if (redisTemplate.hasKey("Article::" + articleId)){
             article = (Article) redisTemplate.opsForValue().get("Article::" + articleId);
         }
         else {
             article = articleRepository.findArticle(articleId);
-        }
-        if (article == null){
-            throw new BBSException(ResultEnum.ARTICLE_NOT_EXIT);
+            if (article == null){
+                throw new BBSException(ResultEnum.ARTICLE_NOT_EXIT);
+            }
         }
         return article;
+    }
+
+    @Override
+    /**
+     * 删除帖子
+     */
+    @Transactional
+    public void deleteArticle(String articleId) throws BBSException {
+        // 1.获取到帖子
+        Article article = getArticle(articleId);
+        // 2.将删除位置为1
+        article.setArticleIsDelete(DeleteEnum.DELETE.getCode());
+        // 3.更新数据库并删除缓存
+        articleRepository.save(article);
+        redisTemplate.delete("Article::" + articleId);
     }
 
     @Override
@@ -185,6 +182,7 @@ public class ArticleServiceImpl implements ArticleService {
      * 查找用户收藏的帖子
      */
     public Page<ArticleVO> findCollectArticle(String userId, Pageable pageable) {
+        collectService.updateCollectDatabase();
         // 1.查找用户收藏的帖子
         Page<Article> articles = articleRepository.findUserCollect(userId, pageable);
         // 2.对每一篇帖子进行拼装
@@ -197,6 +195,7 @@ public class ArticleServiceImpl implements ArticleService {
     /**
      * 从redis更新帖子数据
      */
+    @Transactional
     public void updateArticleDatabase() {
         // 1.找到所有关于帖子的key
         Set<String> articleKeys = redisTemplate.keys("Article::*");
@@ -212,11 +211,18 @@ public class ArticleServiceImpl implements ArticleService {
         return;
     }
 
+    /**
+     * 计算帖子热度
+     * @param article
+     * @return
+     */
     private Article calcHotNum(Article article){
         Double hotNum = LIKE_NUM_WEIGHT * article.getArticleLikeNum()
                 + VIEW_NUM_WEIGHT * article.getArticleViewNum()
-                + COMMENT_NUM_WEIGHT * article.getArticleCommentNum()
-                + TIME_WEIGHT * (System.currentTimeMillis() - article.getArticleCreateTime().getTime()) / 6000;
+                + COMMENT_NUM_WEIGHT * article.getArticleCommentNum() / 6000;
+        if (article.getArticleCreateTime() != null){
+            hotNum += TIME_WEIGHT * (System.currentTimeMillis() - article.getArticleCreateTime().getTime()) / 6000;
+        }
         article.setArticleHotNum(hotNum);
         return article;
     }
@@ -239,12 +245,15 @@ public class ArticleServiceImpl implements ArticleService {
             articleVO.setArticleImages(Arrays.asList(article.getArticleImg().split(";")));
         }
         // 查找关键词信息
-        List<String> keywords = keywordService.articleKeywords(article.getArticleId());
-        articleVO.setKeywords(keywords);
+        if (article.getArticleKeywords() != null){
+            articleVO.setKeywords(Arrays.asList(article.getArticleKeywords().split("[ ]+")));
+        }
         // 查看帖子是否被当前用户点赞
         articleVO.setIsLike(likeService.isArticleLike(article.getArticleId(), userId));
         // 查看帖子是否被当前用户收藏
         articleVO.setIsCollect(collectService.isArticleCollect(article.getArticleId(), userId));
+        // 查看帖子是否被删除
+        articleVO.setIsDelete(article.getArticleIsDelete() == DeleteEnum.NOT_DELETE.getCode() ? false : true);
         return articleVO;
     }
 

@@ -1,7 +1,9 @@
 package com.ccnu.bbs.exception;
 
 import com.ccnu.bbs.enums.ResultEnum;
+import lombok.Data;
 
+@Data
 public class BBSException extends RuntimeException {
 
     private Integer code;

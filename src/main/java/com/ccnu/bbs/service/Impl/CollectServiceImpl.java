@@ -6,10 +6,9 @@ import com.ccnu.bbs.forms.CollectForm;
 import com.ccnu.bbs.repository.CollectRepository;
 import com.ccnu.bbs.service.CollectService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
 
@@ -70,6 +69,7 @@ public class CollectServiceImpl implements CollectService {
     /**
      * 从redis更新数据库
      */
+    @Transactional
     public void updateCollectDatabase() {
         // 1.找到所有有关收藏的key
         Set<String> collectKeys = redisTemplate.keys("Collect::*");

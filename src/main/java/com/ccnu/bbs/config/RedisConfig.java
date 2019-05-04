@@ -20,7 +20,6 @@ import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 
-
 @Configuration
 @EnableCaching
 @Component
@@ -39,7 +38,8 @@ public class RedisConfig {
         RedisCacheConfiguration redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(timeToLive) //设置过期时间
                 .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(keySerializer())) // 设置键的序列化方式
-                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(valueSerializer())); // 设置值得序列化方式
+                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(valueSerializer())) // 设置值得序列化方式
+                .disableCachingNullValues(); //不缓存空值
         // 2.建立redis缓存管理
         RedisCacheManager redisCacheManager = RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(redisCacheConfiguration)

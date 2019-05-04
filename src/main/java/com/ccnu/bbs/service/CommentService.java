@@ -24,4 +24,7 @@ public interface CommentService {
 
     /** 从redis或数据库中得到评论. */
     Comment getComment(String commentId);
+
+    /** 从redis中更新评论数据. */
+    void updateCommentDatabase();
 }

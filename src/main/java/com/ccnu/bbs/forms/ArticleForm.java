@@ -15,7 +15,7 @@ public class ArticleForm {
     @NotEmpty
     private String articleContent;
     /** 帖子关键词. */
-    private List<String> articleKeywords;
+    private String articleKeywords;
     /** 上传的图片. */
     private List<String> imgUrls;
 }

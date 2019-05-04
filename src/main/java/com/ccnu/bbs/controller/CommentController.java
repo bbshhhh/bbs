@@ -31,6 +31,13 @@ public class CommentController {
     @Autowired
     private LikeServiceImpl likeService;
 
+    /**
+     * 评论列表
+     * @param articleId
+     * @param page
+     * @param size
+     * @return
+     */
     @GetMapping("/list")
     public ResultVO list(@RequestParam String articleId,
                          @RequestParam(value = "page", defaultValue = "1") Integer page,
@@ -43,6 +50,11 @@ public class CommentController {
         return ResultVOUtil.success(commentVOList);
     }
 
+    /**
+     * 热评
+     * @param articleId
+     * @return
+     */
     @GetMapping("/hot")
     public ResultVO hot(@RequestParam String articleId){
         // 1.校验帖子id
@@ -53,6 +65,13 @@ public class CommentController {
         return  ResultVOUtil.success(commentVOList);
     }
 
+    /**
+     * 创建评论
+     * @param userId
+     * @param commentForm
+     * @param bindingResult
+     * @return
+     */
     @PostMapping("/create")
     public ResultVO create(@RequestAttribute String userId,
                            @RequestBody CommentForm commentForm,
@@ -63,22 +82,44 @@ public class CommentController {
             throw new BBSException(ResultEnum.PARAM_ERROR.getCode(),
                     bindingResult.getFieldError().getDefaultMessage());
         }
-        // 2.将评论保存进数据库中
-        Comment comment = commentService.createComment(userId, commentForm);
-        // 3.返回帖子id
-        HashMap<String, String> map = new HashMap();
-        map.put("commentId", comment.getCommentId());
-        return ResultVOUtil.success(map);
+        try{
+            // 2.将评论保存进数据库中
+            Comment comment = commentService.createComment(userId, commentForm);
+            // 3.返回评论id
+            HashMap<String, String> map = new HashMap();
+            map.put("commentId", comment.getCommentId());
+            return ResultVOUtil.success(map);
+        }
+        catch (BBSException e){
+            return ResultVOUtil.error(e.getCode(), e.getMessage());
+        }
     }
 
+    /**
+     * 评论内容
+     * @param commentId
+     * @return
+     */
     @GetMapping("/content")
     public ResultVO content(@RequestParam String commentId){
         if (commentId == null){
             return ResultVOUtil.error(ResultEnum.COMMENT_ID_ERROR.getCode(), ResultEnum.COMMENT_ID_ERROR.getMessage());
         }
-        return ResultVOUtil.success(commentService.findComment(commentId));
+        try{
+            return ResultVOUtil.success(commentService.findComment(commentId));
+        }
+        catch (BBSException e){
+            return ResultVOUtil.error(e.getCode(), e.getMessage());
+        }
     }
 
+    /**
+     * 评论点赞
+     * @param userId
+     * @param likeCommentForm
+     * @param bindingResult
+     * @return
+     */
     @PostMapping("/like")
     public ResultVO like(@RequestAttribute String userId,
                          @RequestBody LikeCommentForm likeCommentForm,
@@ -89,7 +130,12 @@ public class CommentController {
             throw new BBSException(ResultEnum.PARAM_ERROR.getCode(),
                     bindingResult.getFieldError().getDefaultMessage());
         }
-        likeService.updateLikeComment(likeCommentForm, userId);
-        return ResultVOUtil.success();
+        try{
+            likeService.updateLikeComment(likeCommentForm, userId);
+            return ResultVOUtil.success();
+        }
+        catch (BBSException e){
+            return ResultVOUtil.error(e.getCode(), e.getMessage());
+        }
     }
 }

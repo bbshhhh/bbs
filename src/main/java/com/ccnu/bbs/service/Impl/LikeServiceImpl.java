@@ -3,17 +3,16 @@ package com.ccnu.bbs.service.Impl;
 import com.ccnu.bbs.entity.*;
 import com.ccnu.bbs.enums.LikeEnum;
 import com.ccnu.bbs.enums.MessageEnum;
+import com.ccnu.bbs.exception.BBSException;
 import com.ccnu.bbs.forms.LikeArticleForm;
 import com.ccnu.bbs.forms.LikeCommentForm;
-import com.ccnu.bbs.repository.ArticleRepository;
 import com.ccnu.bbs.repository.LikeArticleRepository;
 import com.ccnu.bbs.repository.LikeCommentRepository;
 import com.ccnu.bbs.service.LikeService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
 
@@ -74,29 +73,41 @@ public class LikeServiceImpl implements LikeService {
     /**
      * 帖子点赞更新
      */
-    public LikeArticle updateLikeArticle(LikeArticleForm likeArticleForm, String userId) {
+    public LikeArticle updateLikeArticle(LikeArticleForm likeArticleForm, String userId) throws BBSException {
         LikeArticle likeArticle;
         String articleId = likeArticleForm.getLikeArticleId();
-        // 1.先看redis中有没有帖子点赞信息
+        // 1.在redis或数据库中查找被点赞的帖子
+        Article article = articleService.getArticle(articleId);
+        // 2.看redis中有没有帖子点赞信息
         if (redisTemplate.hasKey("LikeArticle::" + articleId + '-' + userId)){
             likeArticle = (LikeArticle) redisTemplate.opsForValue().get("LikeArticle::" + articleId + '-' + userId);
         }
-        // 2.若没有则去数据库中查询点赞信息
+        // 3.若没有则去数据库中查询点赞信息
         else {
             likeArticle = likeArticleRepository.findLikeArticle(articleId, userId);
         }
-        // 3.若还是没有则新建点赞信息,并设置帖子id和点赞用户id
+        // 4.若还是没有则新建点赞信息,并设置帖子id和点赞用户id
         if (likeArticle == null){
             likeArticle = new LikeArticle();
             likeArticle.setLikeArticleId(articleId);
             likeArticle.setLikeUserId(userId);
+            // 如果是新建的点赞信息，并且点赞的状态是已点赞，则创建新的点赞通知消息
+            if (likeArticleForm.getIsLike() == LikeEnum.LIKE.getCode()){
+                Message message = new Message();
+                message.setArticleId(articleId);
+                message.setMessageType(MessageEnum.LIKE_MESSAGE.getCode());
+                message.setReceiverUserId(article.getArticleUserId());
+                message.setSenderUserId(userId);
+                message.setRepliedContent(article.getArticleContent());
+                message.setMessageContent("赞了你的帖子");
+                messageService.createMessage(message);
+            }
         }
-        // 4.在redis或数据库中查找帖子更新点赞数
-        Article article = articleService.getArticle(articleId);
+        // 5.更新被点赞帖子的点赞数
         // 如果点赞信息为空或者为未点赞且要更新的点赞信息为已点赞，则帖子点赞数+1
         if (likeArticle.getIsLike() == null || likeArticle.getIsLike() == LikeEnum.NOT_LIKE.getCode()){
             if (likeArticleForm.getIsLike() == LikeEnum.LIKE.getCode()){
-                article.setArticleCommentNum(article.getArticleCommentNum() + 1);
+                article.setArticleLikeNum(article.getArticleLikeNum() + 1);
             }
         }
         // 如果点赞信息为已点赞且要更新的点赞信息为未点赞，则帖子点赞数-1
@@ -111,15 +122,6 @@ public class LikeServiceImpl implements LikeService {
         likeArticle.setIsLike(likeArticleForm.getIsLike());
         // 6.将点赞信息存入redis
         redisTemplate.opsForValue().set("LikeArticle::" + articleId + '-' + userId, likeArticle);
-        // 7.创建点赞新消息通知被点赞者
-        Message message = new Message();
-        message.setArticleId(articleId);
-        message.setMessageType(MessageEnum.LIKE_MESSAGE.getCode());
-        message.setReceiverUserId(article.getArticleUserId());
-        message.setSenderUserId(userId);
-        message.setRepliedContent(article.getArticleContent());
-        message.setMessageContent("赞了你的帖子");
-        messageService.createMessage(message);
         return likeArticle;
     }
 
@@ -127,38 +129,55 @@ public class LikeServiceImpl implements LikeService {
     /**
      * 评论点赞更新
      */
-    public LikeComment updateLikeComment(LikeCommentForm likeCommentForm, String userId) {
+    public LikeComment updateLikeComment(LikeCommentForm likeCommentForm, String userId) throws BBSException {
         LikeComment likeComment;
         String commentId = likeCommentForm.getLikeCommentId();
-        // 1.先看redis中有没有帖子点赞信息
+        // 1.在redis或数据库中找到评论
+        Comment comment = commentService.getComment(commentId);
+        // 2.先看redis中有没有评论点赞信息
         if (redisTemplate.hasKey("LikeComment::" + commentId + '-' + userId)){
             likeComment = (LikeComment) redisTemplate.opsForValue().get("LikeComment::" + commentId + '-' + userId);
         }
-        // 2.若没有则去数据库中查询点赞信息
+        // 3.若没有则去数据库中查询点赞信息
         else {
             likeComment = likeCommentRepository.findLikeComment(commentId, userId);
         }
-        // 3.若还是没有则新建点赞信息,并设置帖子id和点赞用户id
+        // 4.若还是没有则新建点赞信息,并设置帖子id和点赞用户id
         if (likeComment == null){
             likeComment = new LikeComment();
             likeComment.setLikeCommentId(commentId);
             likeComment.setLikeUserId(userId);
+            // 如果是新建的点赞信息，并且点赞的状态是已点赞，则创建新的点赞通知消息
+            if (likeCommentForm.getIsLike() == LikeEnum.LIKE.getCode()){
+                Message message = new Message();
+                message.setArticleId(comment.getCommentArticleId());
+                message.setMessageType(MessageEnum.LIKE_MESSAGE.getCode());
+                message.setReceiverUserId(comment.getCommentUserId());
+                message.setSenderUserId(userId);
+                message.setRepliedContent(comment.getCommentContent());
+                message.setMessageContent("赞了你的评论");
+                messageService.createMessage(message);
+            }
         }
-        // 4.在redis或数据库中找到评论
-        Comment comment = commentService.getComment(commentId);
-        // 5.设置点赞状态
+        // 5.更新被点赞评论的点赞数
+        // 如果点赞信息为空或者为未点赞且要更新的点赞信息为已点赞，则评论点赞数+1
+        if (likeComment.getIsLike() == null || likeComment.getIsLike() == LikeEnum.NOT_LIKE.getCode()){
+            if (likeCommentForm.getIsLike() == LikeEnum.LIKE.getCode()){
+                comment.setCommentLikeNum(comment.getCommentLikeNum() + 1);
+            }
+        }
+        // 如果点赞信息为已点赞且要更新的点赞信息为未点赞，则帖子点赞数-1
+        else {
+            if (likeCommentForm.getIsLike() == LikeEnum.NOT_LIKE.getCode()){
+                comment.setCommentLikeNum(comment.getCommentLikeNum() - 1);
+            }
+        }
+        // 将评论存入redis
+        redisTemplate.opsForValue().set("Comment::" + commentId, comment);
+        // 6.设置点赞状态
         likeComment.setIsLike(likeCommentForm.getIsLike());
-        // 6.将点赞信息存入redis
+        // 7.将点赞信息存入redis
         redisTemplate.opsForValue().set("LikeComment::" + commentId + '-' + userId, likeComment);
-        // 7.创建点赞新消息通知被点赞者
-        Message message = new Message();
-        message.setArticleId(comment.getCommentArticleId());
-        message.setMessageType(MessageEnum.LIKE_MESSAGE.getCode());
-        message.setReceiverUserId(comment.getCommentUserId());
-        message.setSenderUserId(userId);
-        message.setRepliedContent(comment.getCommentContent());
-        message.setMessageContent("赞了你的评论");
-        messageService.createMessage(message);
         return likeComment;
     }
 
@@ -166,6 +185,7 @@ public class LikeServiceImpl implements LikeService {
     /**
      * 从redis更新帖子点赞到数据库
      */
+    @Transactional
     public void updateLikeArticleDatabase() {
         // 1.找到所有有关收藏的key
         Set<String> likeArticleKeys = redisTemplate.keys("LikeArticle::*");

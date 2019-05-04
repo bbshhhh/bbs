@@ -93,6 +93,26 @@ public class ArticleController {
         return ResultVOUtil.success(map);
     }
 
+
+    /**
+     * 删除帖子
+     * @param articleId
+     * @return
+     */
+    @GetMapping("/delete")
+    public ResultVO delete(@RequestParam String articleId){
+        if (articleId == null){
+            return ResultVOUtil.error(ResultEnum.ARTICLE_ID_ERROR.getCode(), ResultEnum.ARTICLE_ID_ERROR.getMessage());
+        }
+        try {
+            articleService.deleteArticle(articleId);
+            return ResultVOUtil.success();
+        }
+        catch (BBSException e){
+            return ResultVOUtil.error(e.getCode(), e.getMessage());
+        }
+    }
+
     /**
      * 帖子内容
      * @param articleId
@@ -104,7 +124,12 @@ public class ArticleController {
         if (articleId == null){
             return ResultVOUtil.error(ResultEnum.ARTICLE_ID_ERROR.getCode(), ResultEnum.ARTICLE_ID_ERROR.getMessage());
         }
-        return ResultVOUtil.success(articleService.findArticle(articleId));
+        try{
+            return ResultVOUtil.success(articleService.findArticle(articleId));
+        }catch (BBSException e){
+            return ResultVOUtil.error(e.getCode(), e.getMessage());
+        }
+
     }
 
     /**
@@ -124,8 +149,13 @@ public class ArticleController {
             throw new BBSException(ResultEnum.PARAM_ERROR.getCode(),
                     bindingResult.getFieldError().getDefaultMessage());
         }
-        likeService.updateLikeArticle(likeArticleForm, userId);
-        return ResultVOUtil.success();
+        try {
+            likeService.updateLikeArticle(likeArticleForm, userId);
+            return ResultVOUtil.success();
+        }
+        catch (BBSException e){
+            return ResultVOUtil.error(e.getCode(), e.getMessage());
+        }
     }
 
     /**

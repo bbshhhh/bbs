@@ -20,6 +20,8 @@ public class CommentVO {
     private Integer commentLikeNum;
     /** 是否被当前用户点赞过. */
     private Boolean isLike;
+    /** 帖子是否被删除. */
+    private Boolean isArticleDelete;
     /** 评论时间. */
     private Date commentTime;
     /** 回复列表. */

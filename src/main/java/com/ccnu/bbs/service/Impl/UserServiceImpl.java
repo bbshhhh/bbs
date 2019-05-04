@@ -12,6 +12,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
@@ -21,13 +22,19 @@ public class UserServiceImpl implements UserService {
     UserRepository userRepository;
 
     @Override
+    /**
+     * 查找用户
+     */
     @Cacheable(cacheNames = "User", key = "#userId")
     public User findUser(String userId) {
         return userRepository.findByUserId(userId);
     }
 
     @Override
-    @CachePut(cacheNames = "User", key = "#userId")
+    /**
+     * 创建用户
+     */
+    @Transactional
     public User createUser(String userId) {
         User user = new User();
         user.setUserId(userId);
@@ -35,6 +42,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    /**
+     * 更新用户信息
+     */
+    @Transactional
     @CacheEvict(cacheNames = "User", key = "#userInfo.openId")
     public User updateUser(WxMaUserInfo userInfo) {
         String userId = userInfo.getOpenId();

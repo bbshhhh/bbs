@@ -31,7 +31,4 @@ public interface CommentRepository extends JpaRepository<Comment, String> {
 
     @Query("select c from Comment c where c.commentId = ?1")
     Comment findComment(String commentId);
-
-    @Transactional
-    void deleteByCommentArticleId(String commentId);
 }

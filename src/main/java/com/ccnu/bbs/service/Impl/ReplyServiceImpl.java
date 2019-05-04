@@ -19,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +31,7 @@ public class ReplyServiceImpl implements ReplyService {
     private ReplyRepository replyRepository;
 
     @Autowired
-    private CommentRepository commentRepository;
+    private CommentServiceImpl commentService;
 
     @Autowired
     private UserServiceImpl userService;
@@ -63,7 +64,8 @@ public class ReplyServiceImpl implements ReplyService {
     /**
      * 创建回复
      */
-    public Reply createReply(ReplyForm replyForm, String userId) {
+    @Transactional
+    public Reply createReply(ReplyForm replyForm, String userId) throws BBSException {
         Reply reply = new Reply();
         String commentId = replyForm.getCommentId();
         BeanUtils.copyProperties(replyForm, reply);
@@ -76,10 +78,7 @@ public class ReplyServiceImpl implements ReplyService {
         // 4.创建新消息，以通知被回复者
         Message message = new Message();
         // 找到被评论者所在帖子,将帖子id存入
-        Comment comment = commentRepository.findComment(commentId);
-        if (comment == null){
-            throw new BBSException(ResultEnum.COMMENT_NOT_EXIT);
-        }
+        Comment comment = commentService.getComment(commentId);
         message.setArticleId(comment.getCommentArticleId());
         // 存入其他信息
         message.setCommentId(comment.getCommentId());
@@ -92,5 +91,4 @@ public class ReplyServiceImpl implements ReplyService {
         // 保存回复
         return replyRepository.save(reply);
     }
-
 }

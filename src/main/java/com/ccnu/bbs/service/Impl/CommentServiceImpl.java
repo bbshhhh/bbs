@@ -6,26 +6,26 @@ import com.ccnu.bbs.entity.Article;
 import com.ccnu.bbs.entity.Comment;
 import com.ccnu.bbs.entity.Message;
 import com.ccnu.bbs.entity.User;
+import com.ccnu.bbs.enums.DeleteEnum;
 import com.ccnu.bbs.enums.MessageEnum;
 import com.ccnu.bbs.enums.ResultEnum;
 import com.ccnu.bbs.exception.BBSException;
 import com.ccnu.bbs.forms.CommentForm;
-import com.ccnu.bbs.repository.ArticleRepository;
 import com.ccnu.bbs.repository.CommentRepository;
 import com.ccnu.bbs.service.CommentService;
 import com.ccnu.bbs.utils.KeyUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -83,7 +83,8 @@ public class CommentServiceImpl implements CommentService {
     /**
      * 创建评论
      */
-    public Comment createComment(String userId, CommentForm commentForm){
+    @Transactional
+    public Comment createComment(String userId, CommentForm commentForm) throws BBSException{
         Comment comment = new Comment();
         BeanUtils.copyProperties(commentForm, comment);
         // 1.设置主键
@@ -92,6 +93,7 @@ public class CommentServiceImpl implements CommentService {
         comment.setCommentArticleId(commentForm.getArticleId());
         // 3.设置评论者
         comment.setCommentUserId(userId);
+        comment = commentRepository.save(comment);
         // 4.在redis或数据库中查找帖子
         Article article = articleService.getArticle(comment.getCommentArticleId());
         // 5.将帖子评论数+1，存入redis中
@@ -109,17 +111,16 @@ public class CommentServiceImpl implements CommentService {
         message.setRepliedContent(article.getArticleContent());
         message.setMessageContent(comment.getCommentContent());
         messageService.createMessage(message);
-        return commentRepository.save(comment);
+        return comment;
     }
 
     @Override
     /**
      * 查看评论
      */
-    public CommentVO findComment(String commentId){
+    public CommentVO findComment(String commentId) throws BBSException{
         Comment comment = getComment(commentId);
-        CommentVO commentVO;
-        commentVO = comment2commentVO(comment.getCommentUserId(), comment);
+        CommentVO commentVO = comment2commentVO(comment.getCommentUserId(), comment);
         return commentVO;
     }
 
@@ -127,19 +128,37 @@ public class CommentServiceImpl implements CommentService {
     /**
      * 从redis或数据库中得到评论
      */
-    public Comment getComment(String commentId) {
+    public Comment getComment(String commentId) throws BBSException {
         Comment comment;
         if (redisTemplate.hasKey("Comment::" + commentId)){
             comment = (Comment) redisTemplate.opsForValue().get("Comment::" + commentId);
         }
         else {
             comment = commentRepository.findComment(commentId);
+            if (comment == null){
+                throw new BBSException(ResultEnum.COMMENT_NOT_EXIT);
+            }
+            redisTemplate.opsForValue().set("Comment::" + commentId, comment);
         }
-        if (comment == null){
-            throw new BBSException(ResultEnum.COMMENT_NOT_EXIT);
-        }
-        redisTemplate.opsForValue().set("Comment::" + commentId, comment,1, TimeUnit.DAYS);
         return comment;
+    }
+
+    @Override
+    /**
+     * 从redis更新评论数据
+     */
+    @Transactional
+    public void updateCommentDatabase() {
+        // 1.找到所有关于评论的key
+        Set<String> commentKeys = redisTemplate.keys("Comment::*");
+        for (String commentKey : commentKeys){
+            // 2.根据每一个key得到评论
+            Comment comment = (Comment) redisTemplate.opsForValue().get(commentKey);
+            // 4.保存帖子进数据库，并删除redis里的数据
+            commentRepository.save(comment);
+            redisTemplate.delete(commentKey);
+        }
+        return;
     }
 
     /**
@@ -153,6 +172,9 @@ public class CommentServiceImpl implements CommentService {
         CommentVO commentVO = new CommentVO();
         // 获得评论信息
         BeanUtils.copyProperties(comment, commentVO);
+        // 查找帖子信息,查看帖子是否被删除
+        Article article = articleService.getArticle(comment.getCommentArticleId());
+        commentVO.setIsArticleDelete(article.getArticleIsDelete() == DeleteEnum.NOT_DELETE.getCode() ? false : true);
         // 查找作者信息
         User user = userService.findUser(comment.getCommentUserId());
         BeanUtils.copyProperties(user, commentVO);

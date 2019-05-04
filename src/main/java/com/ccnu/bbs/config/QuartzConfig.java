@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class QuartzConfig {
 
-    private static final String BBS_TASK_IDENTITY = "LikeTaskQuartz";
+    private static final String BBS_TASK_IDENTITY = "BBSTaskQuartz";
 
     @Bean
     public JobDetail quartzDetail(){

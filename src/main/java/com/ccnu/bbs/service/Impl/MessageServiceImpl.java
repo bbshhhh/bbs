@@ -12,7 +12,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigInteger;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -50,8 +52,18 @@ public class MessageServiceImpl implements MessageService {
     /**
      * 保存新消息
      */
+    @Transactional
     public Message createMessage(Message message) {
         return messageRepository.save(message);
+    }
+
+    @Override
+    /**
+     * 删除消息
+     */
+    @Transactional
+    public void deleteMessage(BigInteger messageId) {
+        messageRepository.deleteByMessageId(messageId);
     }
 
     /**

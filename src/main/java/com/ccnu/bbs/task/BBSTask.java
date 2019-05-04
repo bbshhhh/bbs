@@ -2,6 +2,7 @@ package com.ccnu.bbs.task;
 
 import com.ccnu.bbs.service.Impl.ArticleServiceImpl;
 import com.ccnu.bbs.service.Impl.CollectServiceImpl;
+import com.ccnu.bbs.service.Impl.CommentServiceImpl;
 import com.ccnu.bbs.service.Impl.LikeServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.JobExecutionContext;
@@ -19,7 +20,7 @@ public class BBSTask extends QuartzJobBean {
     private ArticleServiceImpl articleService;
 
     @Autowired
-    private CollectServiceImpl collectService;
+    private CommentServiceImpl commentService;
 
     @Autowired
     private LikeServiceImpl likeService;
@@ -31,7 +32,7 @@ public class BBSTask extends QuartzJobBean {
 
         log.info("BBSTask-------- {}", sdf.format(new Date()));
         articleService.updateArticleDatabase();
-        collectService.updateCollectDatabase();
+        commentService.updateCommentDatabase();
         likeService.updateLikeArticleDatabase();
         likeService.updateLikeCommentDatabase();
     }

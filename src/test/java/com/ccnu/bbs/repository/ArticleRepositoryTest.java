@@ -35,9 +35,4 @@ public class ArticleRepositoryTest {
         articleRepository.findUserLike("123", PageRequest.of(0, 1)).forEach(System.out::println);
     }
 
-    @Test
-    public void deleteByIdTest(){
-       articleRepository.deleteByArticleId("3");
-    }
-
 }

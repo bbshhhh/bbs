@@ -8,7 +8,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.List;
 
 public interface ArticleService {
 
@@ -26,6 +25,9 @@ public interface ArticleService {
 
     /** 查找帖子. */
     Article getArticle(String articleId);
+
+    /** 删除帖子. */
+    void deleteArticle(String aritcleId);
 
     /** 查找用户发表的帖子. */
     Page<ArticleVO> findUserArticle(String userId, Pageable pageable);

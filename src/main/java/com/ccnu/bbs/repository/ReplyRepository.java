@@ -20,6 +20,4 @@ public interface ReplyRepository extends JpaRepository<Reply, String> {
     @Query("select r from Reply r where r.replyUserId = ?1 order by r.replyTime desc")
     Page<Reply> findUserReply(String userId, Pageable pageable);
 
-    @Transactional
-    void deleteByReplyCommentId(String replyId);
 }

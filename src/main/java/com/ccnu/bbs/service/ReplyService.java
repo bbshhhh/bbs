@@ -12,5 +12,6 @@ public interface ReplyService {
     /** 查找评论的回复. */
     Page<ReplyVO> commentReply(String commentId, Pageable pageable);
 
+    /** 创建回复. */
     Reply createReply(ReplyForm replyForm, String userId);
 }

@@ -1,6 +1,5 @@
 package com.ccnu.bbs.controller;
 
-import cn.binarywang.wx.miniapp.bean.WxMaJscode2SessionResult;
 import com.ccnu.bbs.VO.ReplyVO;
 import com.ccnu.bbs.VO.ResultVO;
 import com.ccnu.bbs.entity.Reply;
@@ -11,13 +10,12 @@ import com.ccnu.bbs.service.Impl.ReplyServiceImpl;
 import com.ccnu.bbs.utils.ResultVOUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
-import java.util.List;
 
 @RestController
 @Slf4j
@@ -28,6 +26,13 @@ public class ReplyController {
     private ReplyServiceImpl replyService;
 
 
+    /**
+     * 回复列表
+     * @param commentId
+     * @param page
+     * @param size
+     * @return
+     */
     @GetMapping("/list")
     public ResultVO list(@RequestParam String commentId,
                          @RequestParam(value = "page", defaultValue = "1") Integer page,
@@ -36,10 +41,17 @@ public class ReplyController {
         if (commentId == null||commentId.isEmpty()){
             return ResultVOUtil.error(ResultEnum.COMMENT_ID_ERROR.getCode(), ResultEnum.COMMENT_ID_ERROR.getMessage());
         }
-        List<ReplyVO> replyVOList = replyService.commentReply(commentId, PageRequest.of(page - 1, size)).getContent();
-        return ResultVOUtil.success(replyVOList);
+        Page<ReplyVO> replies = replyService.commentReply(commentId, PageRequest.of(page - 1, size));
+        return ResultVOUtil.success(replies);
     }
 
+    /**
+     * 创建回复
+     * @param userId
+     * @param replyForm
+     * @param bindingResult
+     * @return
+     */
     @PostMapping("/create")
     public ResultVO create(@RequestAttribute String userId,
                            @RequestBody ReplyForm replyForm,
@@ -50,11 +62,16 @@ public class ReplyController {
             throw new BBSException(ResultEnum.PARAM_ERROR.getCode(),
                     bindingResult.getFieldError().getDefaultMessage());
         }
-        // 2.将评论保存进数据库中
-        Reply reply = replyService.createReply(replyForm, userId);
-        // 3.返回评论id
-        HashMap<String, String> map = new HashMap();
-        map.put("replyId", reply.getReplyId());
-        return ResultVOUtil.success(map);
+        try{
+            // 2.将评论保存进数据库中
+            Reply reply = replyService.createReply(replyForm, userId);
+            // 3.返回评论id
+            HashMap<String, String> map = new HashMap();
+            map.put("replyId", reply.getReplyId());
+            return ResultVOUtil.success(map);
+        }
+        catch (BBSException e){
+            return ResultVOUtil.error(e.getCode(), e.getMessage());
+        }
     }
 }

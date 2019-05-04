@@ -30,6 +30,8 @@ public class ArticleVO {
     private Boolean isLike;
     /** 是否被当前用户收藏过. */
     private Boolean isCollect;
+    /** 帖子是否被删除. */
+    private Boolean isDelete;
     /** 帖子发表时间. */
     private Date articleCreateTime;
     /** 帖子关键词. */

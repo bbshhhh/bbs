@@ -3,6 +3,8 @@ package com.ccnu.bbs.entity;
 import lombok.Data;
 
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import java.math.BigInteger;
 
@@ -12,6 +14,7 @@ public class LikeArticle {
 
     /** 点赞id. */
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private BigInteger likeId;
     /** 被点赞文章id. */
     private String likeArticleId;
