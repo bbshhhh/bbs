@@ -1,6 +1,7 @@
 package com.ccnu.bbs.service.Impl;
 
 import com.ccnu.bbs.VO.ArticleVO;
+import com.ccnu.bbs.converter.Date2StringConverter;
 import com.ccnu.bbs.entity.Article;
 import com.ccnu.bbs.entity.User;
 import com.ccnu.bbs.enums.DeleteEnum;
@@ -11,6 +12,11 @@ import com.ccnu.bbs.repository.*;
 import com.ccnu.bbs.searchRepository.ArticleSearchRepository;
 import com.ccnu.bbs.service.ArticleService;
 import com.ccnu.bbs.utils.KeyUtil;
+import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.common.lucene.search.function.FunctionScoreQuery;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.functionscore.FunctionScoreQueryBuilder;
+import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -18,12 +24,14 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.springframework.data.elasticsearch.core.query.SearchQuery;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -31,6 +39,7 @@ import java.util.stream.Collectors;
 
 
 @Service
+@Slf4j
 public class ArticleServiceImpl implements ArticleService {
 
     @Autowired
@@ -73,13 +82,36 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
+    /**
+     * 帖子搜索！！
+     */
     public Page<ArticleVO> searchArticle(String searchKey, Pageable pageable) {
-        // 构建查询条件
-        NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder();
-        // 添加基本分词查询
-        queryBuilder.withQuery(QueryBuilders.multiMatchQuery(searchKey,"articleTitle", "articleContent", "articleKeywords"));
+        // 1.设置对应字段的权重分值
+        // 创建一个FunctionScoreQueryBuilder.FilterFunctionBuilder对象数组
+        List<FunctionScoreQueryBuilder.FilterFunctionBuilder> filterFunctionBuilders = new ArrayList<>();
+        filterFunctionBuilders.add(new FunctionScoreQueryBuilder.FilterFunctionBuilder(QueryBuilders.matchQuery("articleKeywords", searchKey),
+                ScoreFunctionBuilders.weightFactorFunction(5)));
+        filterFunctionBuilders.add(new FunctionScoreQueryBuilder.FilterFunctionBuilder(QueryBuilders.matchQuery("articleTitle", searchKey),
+                ScoreFunctionBuilders.weightFactorFunction(3)));
+        filterFunctionBuilders.add(new FunctionScoreQueryBuilder.FilterFunctionBuilder(QueryBuilders.matchQuery("articleContent", searchKey),
+                ScoreFunctionBuilders.weightFactorFunction(2)));
+        FunctionScoreQueryBuilder.FilterFunctionBuilder[] builders = new FunctionScoreQueryBuilder.FilterFunctionBuilder[filterFunctionBuilders.size()];
+        filterFunctionBuilders.toArray(builders);
+        // 将FunctionScoreQueryBuilder.FilterFunctionBuilder对象数组作为构造器参数传入
+        FunctionScoreQueryBuilder functionScoreQueryBuilder = QueryBuilders.functionScoreQuery(builders).
+                scoreMode(FunctionScoreQuery.ScoreMode.SUM). //设定分值为分数之和
+                setMinScore(5); //超过5分才查询
+        // 已经删除的帖子不查询
+        QueryBuilder queryBuilder = QueryBuilders.termQuery("articleIsDelete", 0);
+        // 用boolQuery()构造多重查询条件
+        QueryBuilder qb = QueryBuilders.boolQuery().must(functionScoreQueryBuilder).must(queryBuilder);
+        // 创建搜索 DSL 查询
+        SearchQuery searchQuery = new NativeSearchQueryBuilder().
+                withQuery(qb).
+                withPageable(pageable).build();
+        log.info("\n searchAritcle(): searchContent [" + searchKey + "] \n DSL  = \n " + searchQuery.getQuery().toString());
         // 搜索，获取结果
-        Page<Article> articles = articleSearchRepository.search(queryBuilder.build());
+        Page<Article> articles = articleSearchRepository.search(searchQuery);
         // 2.对每一篇帖子进行拼装
         List<ArticleVO> articleVOList = articles.stream().
                 map(e -> article2articleVO(e, e.getArticleId())).collect(Collectors.toList());
@@ -113,7 +145,9 @@ public class ArticleServiceImpl implements ArticleService {
         article = calcHotNum(article);
         // 6.将帖子存入数据库
         article = articleRepository.save(article);
-        // 7.创建帖子需要从redis同步一遍帖子数据，以便排序
+        // 7.将帖子存入es,以便搜索
+        article = articleSearchRepository.save(article);
+        // 8.创建帖子需要从redis同步一遍帖子数据，以便排序
         updateArticleDatabase();
         return article;
     }
@@ -178,8 +212,9 @@ public class ArticleServiceImpl implements ArticleService {
         Article article = getArticle(articleId);
         // 2.将删除位置为1
         article.setArticleIsDelete(DeleteEnum.DELETE.getCode());
-        // 3.更新数据库并删除缓存
+        // 3.更新数据库及es并删除缓存
         articleRepository.save(article);
+        articleSearchRepository.save(article);
         redisTemplate.delete("Article::" + articleId);
     }
 
@@ -223,8 +258,9 @@ public class ArticleServiceImpl implements ArticleService {
             Article article = (Article) redisTemplate.opsForValue().get(articleKey);
             // 3.更新帖子热度
             article = calcHotNum(article);
-            // 4.保存帖子进数据库，并删除redis里的数据
+            // 4.保存帖子进数据库及es，并删除redis里的数据
             articleRepository.save(article);
+            articleSearchRepository.save(article);
             redisTemplate.delete(articleKey);
         }
         return;
@@ -259,6 +295,8 @@ public class ArticleServiceImpl implements ArticleService {
         // 查找作者信息
         User user = userService.findUser(article.getArticleUserId());
         BeanUtils.copyProperties(user, articleVO);
+        // 设定时间
+        articleVO.setArticleCreateTime(Date2StringConverter.convert(article.getArticleCreateTime()));
         // 获得图片url
         if (article.getArticleImg()!=null){
             articleVO.setArticleImages(Arrays.asList(article.getArticleImg().split(";")));

@@ -51,6 +51,15 @@ public class ArticleController {
         return ResultVOUtil.success(articles);
     }
 
+    @GetMapping("/search")
+    public ResultVO search(@RequestParam String searchKey,
+                           @RequestParam(value = "page", defaultValue = "1") Integer page,
+                           @RequestParam(value = "size", defaultValue = "10") Integer size){
+        // 搜索帖子列表
+        Page<ArticleVO> articles = articleService.searchArticle(searchKey, PageRequest.of(page - 1, size));
+        return ResultVOUtil.success(articles);
+    }
+
     /**
      * 图片上传
      * @param multipartFile

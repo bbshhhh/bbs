@@ -1,6 +1,7 @@
 package com.ccnu.bbs.service.Impl;
 
 import com.ccnu.bbs.VO.ReplyVO;
+import com.ccnu.bbs.converter.Date2StringConverter;
 import com.ccnu.bbs.entity.Comment;
 import com.ccnu.bbs.entity.Message;
 import com.ccnu.bbs.entity.Reply;
@@ -55,6 +56,8 @@ public class ReplyServiceImpl implements ReplyService {
             // 获得回复作者信息
             User user = userService.findUser(reply.getReplyUserId());
             BeanUtils.copyProperties(user, replyVO);
+            // 获得时间
+            replyVO.setReplyTime(Date2StringConverter.convert(reply.getReplyTime()));
             replyVOList.add(replyVO);
         }
         return new PageImpl(replyVOList, pageable, replies.getTotalElements());

@@ -33,7 +33,7 @@ public class ArticleVO {
     /** 帖子是否被删除. */
     private Boolean isDelete;
     /** 帖子发表时间. */
-    private Date articleCreateTime;
+    private String articleCreateTime;
     /** 帖子关键词. */
     private List<String> keywords;
     /** 帖子图片. */

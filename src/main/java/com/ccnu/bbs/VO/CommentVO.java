@@ -23,7 +23,7 @@ public class CommentVO {
     /** 帖子是否被删除. */
     private Boolean isArticleDelete;
     /** 评论时间. */
-    private Date commentTime;
+    private String commentTime;
     /** 回复列表. */
     private List<ReplyVO> replies;
 }

@@ -4,6 +4,8 @@ import lombok.Data;
 import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.Entity;
@@ -26,12 +28,15 @@ public class Article implements Serializable {
     /** 用户id. */
     private String articleUserId;
     /** 帖子标题. */
+    @Field(type = FieldType.Text, analyzer = "ik_max_word")
     private String articleTitle;
     /** 帖子内容. */
+    @Field(type = FieldType.Text, analyzer = "ik_max_word")
     private String articleContent;
     /** 帖子图片. */
     private String articleImg;
     /** 帖子关键词. */
+    @Field(type = FieldType.Text, analyzer = "ik_max_word")
     private String articleKeywords;
     /** 帖子浏览次数. */
     private Integer articleViewNum = 0;

@@ -2,6 +2,7 @@ package com.ccnu.bbs.service.Impl;
 
 import com.ccnu.bbs.VO.CommentVO;
 import com.ccnu.bbs.VO.ReplyVO;
+import com.ccnu.bbs.converter.Date2StringConverter;
 import com.ccnu.bbs.entity.Article;
 import com.ccnu.bbs.entity.Comment;
 import com.ccnu.bbs.entity.Message;
@@ -183,6 +184,8 @@ public class CommentServiceImpl implements CommentService {
         commentVO.setReplies(replies);
         // 查看评论是否被当前用户点赞
         commentVO.setIsLike(likeService.isCommentLike(comment.getCommentId(), userId));
+        // 设定时间
+        commentVO.setCommentTime(Date2StringConverter.convert(comment.getCommentTime()));
         return commentVO;
     }
 }

@@ -1,6 +1,7 @@
 package com.ccnu.bbs.service.Impl;
 
 import com.ccnu.bbs.VO.MessageVO;
+import com.ccnu.bbs.converter.Date2StringConverter;
 import com.ccnu.bbs.entity.Message;
 import com.ccnu.bbs.entity.User;
 import com.ccnu.bbs.enums.MessageStatusEnum;
@@ -80,6 +81,8 @@ public class MessageServiceImpl implements MessageService {
         User user = userService.findUser(message.getSenderUserId());
         messageVO.setSenderUserName(user.getUserName());
         messageVO.setSenderUserImg(user.getUserImg());
+        // 获得时间
+        messageVO.setMessageTime(Date2StringConverter.convert(message.getMessageTime()));
         // 将消息设为已读,存入数据库
         message.setIsRead(MessageStatusEnum.READ.getCode());
         messageRepository.save(message);

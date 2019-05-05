@@ -10,20 +10,19 @@ import java.util.Date;
 public class MessageVO {
 
     /** 消息id. */
-    BigInteger messageId;
+    private BigInteger messageId;
     /** 消息对应帖子id. */
-    String articleId;
+    private String articleId;
     /** 消息对应评论id. */
-    String commentId;
+    private String commentId;
     /** 消息发送者昵称. */
-    String senderUserName;
+    private String senderUserName;
     /** 消息发送者头像. */
-    String senderUserImg;
+    private String senderUserImg;
     /** 消息回复的内容. */
-    String repliedContent;
+    private String repliedContent;
     /** 消息内容. */
-    String messageContent;
+    private String messageContent;
     /** 消息创建时间. */
-    @CreatedDate
-    Date messageTime;
+    private String messageTime;
 }

@@ -16,5 +16,5 @@ public class ReplyVO {
     /** 回复内容. */
     private String replyContent;
     /** 回复时间. */
-    private Date replyTime;
+    private String replyTime;
 }
