@@ -60,7 +60,6 @@ public class CommentServiceImpl implements CommentService {
     public List<CommentVO> hotArticleComment(String articleId){
         // 1.根据帖子id查询评论，并按照点赞数降序排列(取前3的评论)
         List<Comment> comments = commentRepository.findArticleCommentByLike(articleId);
-        comments = comments.subList(0, comments.size() > 3 ? 3 : comments.size());
         // 2.对每一个评论加入评论作者信息和回复信息
         List<CommentVO> commentVOList = comments.stream().
                 map(e -> comment2commentVO(e.getCommentUserId(), e)).collect(Collectors.toList());
@@ -102,6 +101,8 @@ public class CommentServiceImpl implements CommentService {
             article.setArticleCommentNum(article.getArticleCommentNum() + 1);
             redisTemplate.opsForValue().set("Article::" + comment.getCommentArticleId(), article);
         }
+        updateCommentDatabase();
+        articleService.updateArticleDatabase();
         // 6.创建评论消息，以通知被评论者
         Message message = new Message();
         message.setArticleId(article.getArticleId());

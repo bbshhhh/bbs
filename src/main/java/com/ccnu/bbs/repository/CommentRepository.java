@@ -13,7 +13,7 @@ import java.util.List;
 public interface CommentRepository extends JpaRepository<Comment, String> {
 
     // 查看某个帖子的评论(按照点赞数降序排列)
-    @Query("select c from Comment c where c.commentArticleId = ?1 order by c.commentLikeNum desc")
+    @Query("select c from Comment c where c.commentArticleId = ?1 and c.commentLikeNum > 10 order by c.commentLikeNum desc")
     List<Comment> findArticleCommentByLike(String articleId);
 
     // 查看某个帖子的评论(按评论时间升序排列)

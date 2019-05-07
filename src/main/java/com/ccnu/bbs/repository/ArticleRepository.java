@@ -11,7 +11,7 @@ import java.math.BigInteger;
 public interface ArticleRepository extends JpaRepository<Article, BigInteger> {
 
     // 分页查看所有帖子
-    @Query("select a from Article a order by a.articleHotNum desc")
+    @Query("select a from Article a where a.articleIsDelete = 0 order by a.articleHotNum desc")
     Page<Article> findAll(Pageable pageable);
 
     // 查看用户所发帖子

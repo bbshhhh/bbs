@@ -6,6 +6,7 @@ import cn.binarywang.wx.miniapp.bean.WxMaUserInfo;
 import com.ccnu.bbs.VO.ResultVO;
 import com.ccnu.bbs.entity.User;
 import com.ccnu.bbs.enums.ResultEnum;
+import com.ccnu.bbs.forms.UserInfoForm;
 import com.ccnu.bbs.service.Impl.UserServiceImpl;
 import com.ccnu.bbs.utils.KeyUtil;
 import com.ccnu.bbs.utils.ResultVOUtil;
@@ -74,10 +75,11 @@ public class WeChatController {
 
     @PostMapping("/info")
     public ResultVO<String> WeChatInfo(@RequestParam String sessionId,
-                                       @RequestParam String signature,
-                                       @RequestParam String rawData,
-                                       @RequestParam String encryptedData,
-                                       @RequestParam String iv){
+                                       @RequestBody UserInfoForm userInfoForm){
+        String rawData = userInfoForm.getRawData();
+        String signature = userInfoForm.getSignature();
+        String encryptedData = userInfoForm.getEncryptedData();
+        String iv = userInfoForm.getIv();
         // 1.查看是否有sessionId信息
         if (!redisTemplate.hasKey("sessionId::" + sessionId)){
             return ResultVOUtil.error(ResultEnum.SESSION_ID_NULL.getCode(), ResultEnum.SESSION_ID_NULL.getMessage());
