@@ -4,12 +4,6 @@ spring:
     username: root
     password: 'ccnuPass@67867024'
     url: jdbc:mysql://localhost/bbs?characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=GMT%2B8
-  spring:
-    servlet:
-      multipart:
-        enabled: true
-        max-file-size: 100MB
-        max-request-size: 1000MB
   jpa:
     properties:
       hibernate:
