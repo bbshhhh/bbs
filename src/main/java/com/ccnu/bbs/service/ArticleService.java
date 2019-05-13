@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 
 public interface ArticleService {
@@ -21,7 +22,7 @@ public interface ArticleService {
     Article createArticle(String userId, ArticleForm articleForm);
 
     /** 上传图片. */
-    String uploadImg(MultipartFile multipartFile) throws IOException;
+    String uploadImg(File file) throws IOException;
 
     /** 浏览帖子. */
     ArticleVO findArticle(String articleId);

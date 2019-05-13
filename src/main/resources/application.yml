@@ -34,11 +34,10 @@ spring:
     timeout: 5000
     #默认是索引为0的数据库
     database: 0
-#  json格式化
+#    password: 'ccnuPass@67867024'
+  #  json格式化
   jackson:
     default-property-inclusion: non_null
-    date-format: HH:mm
-    time-zone: GMT+8
 #微信小程序配置
 wechat:
   appId: wxf2e2bcf3a3a02033

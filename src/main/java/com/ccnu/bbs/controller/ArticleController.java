@@ -1,5 +1,6 @@
 package com.ccnu.bbs.controller;
 
+import cn.binarywang.wx.miniapp.api.WxMaSecCheckService;
 import com.ccnu.bbs.VO.ArticleVO;
 import com.ccnu.bbs.VO.ResultVO;
 import com.ccnu.bbs.entity.Article;
@@ -12,7 +13,9 @@ import com.ccnu.bbs.service.Impl.ArticleServiceImpl;
 import com.ccnu.bbs.service.Impl.CollectServiceImpl;
 import com.ccnu.bbs.service.Impl.LikeServiceImpl;
 import com.ccnu.bbs.utils.ResultVOUtil;
+import com.google.common.io.Files;
 import lombok.extern.slf4j.Slf4j;
+import me.chanjar.weixin.common.error.WxErrorException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,6 +23,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 
@@ -36,6 +40,9 @@ public class ArticleController {
 
     @Autowired
     private CollectServiceImpl collectService;
+
+    @Autowired
+    private WxMaSecCheckService wxMaSecCheckService;
 
     /**
      * 帖子列表
@@ -67,12 +74,25 @@ public class ArticleController {
      */
     @PostMapping("/upload")
     public ResultVO upload(@RequestParam MultipartFile multipartFile){
-        // 1.进行图片上传
         try {
-            String imgUrl = articleService.uploadImg(multipartFile);
+            // 1.检测图片是否有违规内容
+            File file = new File(Files.createTempDir(), multipartFile.getOriginalFilename());
+            multipartFile.transferTo(file);
+            try{
+                Boolean safe = wxMaSecCheckService.checkImage(file);
+                if (!safe){
+                    return ResultVOUtil.error(ResultEnum.RISKY_CONTENT.getCode(), ResultEnum.RISKY_CONTENT.getMessage());
+                }
+            }
+            catch (WxErrorException e){
+                return ResultVOUtil.error(e.getError().getErrorCode(), e.getError().getErrorMsg());
+            }
+            // 2.进行图片上传
+            String imgUrl = articleService.uploadImg(file);
             return ResultVOUtil.success(imgUrl);
         }catch (IOException e){
-            return ResultVOUtil.error(ResultEnum.UPLOAD_ERROR.getCode(), e.getMessage());
+            e.printStackTrace();
+            return ResultVOUtil.error(ResultEnum.UPLOAD_ERROR.getCode(), ResultEnum.UPLOAD_ERROR.getMessage());
         }
 
     }
@@ -94,9 +114,16 @@ public class ArticleController {
             throw new BBSException(ResultEnum.PARAM_ERROR.getCode(),
                     bindingResult.getFieldError().getDefaultMessage());
         }
-        // 2.将帖子保存进数据库中
+        // 2.检测是否含有敏感内容
+        Boolean safe = wxMaSecCheckService.checkMessage(articleForm.getArticleTitle()
+                + articleForm.getArticleContent()
+                + articleForm.getArticleKeywords());
+        if (!safe){
+            return ResultVOUtil.error(ResultEnum.RISKY_CONTENT.getCode(), ResultEnum.RISKY_CONTENT.getMessage());
+        }
+        // 3.将帖子保存进数据库中
         Article article = articleService.createArticle(userId, articleForm);
-        // 3.返回帖子id
+        // 4.返回帖子id
         HashMap<String, String> map = new HashMap();
         map.put("articleId", article.getArticleId());
         return ResultVOUtil.success(map);

@@ -14,6 +14,8 @@ public class CommentVO {
     private String userName;
     /** 用户头像. */
     private String userImg;
+    /** 用户身份. */
+    private Integer userRole;
     /** 评论内容. */
     private String commentContent;
     /** 评论点赞数. */

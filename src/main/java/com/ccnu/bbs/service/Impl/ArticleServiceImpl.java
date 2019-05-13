@@ -3,6 +3,7 @@ package com.ccnu.bbs.service.Impl;
 import com.ccnu.bbs.VO.ArticleVO;
 import com.ccnu.bbs.converter.Date2StringConverter;
 import com.ccnu.bbs.entity.Article;
+import com.ccnu.bbs.entity.Portray;
 import com.ccnu.bbs.entity.User;
 import com.ccnu.bbs.enums.DeleteEnum;
 import com.ccnu.bbs.enums.ResultEnum;
@@ -29,6 +30,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -50,6 +53,9 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Autowired
     private UserServiceImpl userService;
+
+    @Autowired
+    private PortrayServiceImpl portrayService;
 
     @Autowired
     private LikeServiceImpl likeService;
@@ -156,17 +162,15 @@ public class ArticleServiceImpl implements ArticleService {
     /**
      * 上传图片
      */
-    public String uploadImg(MultipartFile multipartFile) throws IOException{
+    public String uploadImg(File file) throws IOException{
         // 1.创建存储url的字符串
         String imgUrl = new String();
-        // 2.判断文件是否为空
-        if (multipartFile.isEmpty()){
+        // 2.判断文件是否存在
+        if (!file.exists()){
             return imgUrl;
         }
-        // 3.获得文件二进制流
-        FileInputStream inputStream = (FileInputStream) multipartFile.getInputStream();
-        // 4.使用KeyUtil生成唯一主键作为key进行上传，返回图片url
-        imgUrl = qiniuService.uploadFile(inputStream, "bbs/" + KeyUtil.genUniqueKey());
+        // 3.使用KeyUtil生成唯一主键作为key进行上传，返回图片url
+        imgUrl = qiniuService.uploadFile(file, "bbs/" + KeyUtil.genUniqueKey());
         return imgUrl;
     }
 
@@ -295,6 +299,9 @@ public class ArticleServiceImpl implements ArticleService {
         // 查找作者信息
         User user = userService.findUser(article.getArticleUserId());
         BeanUtils.copyProperties(user, articleVO);
+        // 查看作者身份
+        Portray portray = portrayService.findPortray(article.getArticleUserId());
+        articleVO.setUserRole(portray.getPortrayRoleId());
         // 设定时间
         articleVO.setArticleCreateTime(Date2StringConverter.convert(article.getArticleCreateTime()));
         // 获得图片url

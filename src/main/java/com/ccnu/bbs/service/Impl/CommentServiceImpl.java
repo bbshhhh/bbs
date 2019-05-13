@@ -3,10 +3,7 @@ package com.ccnu.bbs.service.Impl;
 import com.ccnu.bbs.VO.CommentVO;
 import com.ccnu.bbs.VO.ReplyVO;
 import com.ccnu.bbs.converter.Date2StringConverter;
-import com.ccnu.bbs.entity.Article;
-import com.ccnu.bbs.entity.Comment;
-import com.ccnu.bbs.entity.Message;
-import com.ccnu.bbs.entity.User;
+import com.ccnu.bbs.entity.*;
 import com.ccnu.bbs.enums.DeleteEnum;
 import com.ccnu.bbs.enums.MessageEnum;
 import com.ccnu.bbs.enums.ResultEnum;
@@ -40,6 +37,9 @@ public class CommentServiceImpl implements CommentService {
 
     @Autowired
     private UserServiceImpl userService;
+
+    @Autowired
+    private PortrayServiceImpl portrayService;
 
     @Autowired
     private ReplyServiceImpl replyService;
@@ -180,6 +180,9 @@ public class CommentServiceImpl implements CommentService {
         // 查找作者信息
         User user = userService.findUser(comment.getCommentUserId());
         BeanUtils.copyProperties(user, commentVO);
+        // 查找作者身份
+        Portray portray = portrayService.findPortray(comment.getCommentUserId());
+        commentVO.setUserRole(portray.getPortrayRoleId());
         // 查找回复信息
         List<ReplyVO> replies = replyService.commentReply(comment.getCommentId(), PageRequest.of(0, 3)).getContent();
         commentVO.setReplies(replies);

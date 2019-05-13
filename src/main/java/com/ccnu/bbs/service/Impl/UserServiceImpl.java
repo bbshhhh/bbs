@@ -3,6 +3,7 @@ package com.ccnu.bbs.service.Impl;
 import cn.binarywang.wx.miniapp.bean.WxMaUserInfo;
 import com.ccnu.bbs.entity.User;
 import com.ccnu.bbs.enums.ResultEnum;
+import com.ccnu.bbs.enums.RoleEnum;
 import com.ccnu.bbs.exception.BBSException;
 import com.ccnu.bbs.repository.UserRepository;
 import com.ccnu.bbs.service.UserService;
@@ -21,6 +22,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     UserRepository userRepository;
 
+    @Autowired
+    PortrayServiceImpl portrayService;
+
     @Override
     /**
      * 查找用户
@@ -38,6 +42,7 @@ public class UserServiceImpl implements UserService {
     public User createUser(String userId) {
         User user = new User();
         user.setUserId(userId);
+        portrayService.savePortray(userId, RoleEnum.USER.getCode());
         return userRepository.save(user);
     }
 

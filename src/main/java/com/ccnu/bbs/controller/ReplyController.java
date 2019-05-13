@@ -1,5 +1,6 @@
 package com.ccnu.bbs.controller;
 
+import cn.binarywang.wx.miniapp.api.WxMaSecCheckService;
 import com.ccnu.bbs.VO.ReplyVO;
 import com.ccnu.bbs.VO.ResultVO;
 import com.ccnu.bbs.entity.Reply;
@@ -25,6 +26,8 @@ public class ReplyController {
     @Autowired
     private ReplyServiceImpl replyService;
 
+    @Autowired
+    private WxMaSecCheckService wxMaSecCheckService;
 
     /**
      * 回复列表
@@ -62,10 +65,15 @@ public class ReplyController {
             throw new BBSException(ResultEnum.PARAM_ERROR.getCode(),
                     bindingResult.getFieldError().getDefaultMessage());
         }
+        // 2.检测是否含有敏感内容
+        Boolean safe = wxMaSecCheckService.checkMessage(replyForm.getReplyContent());
+        if (!safe){
+            return ResultVOUtil.error(ResultEnum.RISKY_CONTENT.getCode(), ResultEnum.RISKY_CONTENT.getMessage());
+        }
         try{
-            // 2.将评论保存进数据库中
+            // 3.将评论保存进数据库中
             Reply reply = replyService.createReply(replyForm, userId);
-            // 3.返回评论id
+            // 4.返回评论id
             HashMap<String, String> map = new HashMap();
             map.put("replyId", reply.getReplyId());
             return ResultVOUtil.success(map);

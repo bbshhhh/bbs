@@ -1,5 +1,6 @@
 package com.ccnu.bbs.controller;
 
+import cn.binarywang.wx.miniapp.api.WxMaSecCheckService;
 import com.ccnu.bbs.VO.CommentVO;
 import com.ccnu.bbs.VO.ResultVO;
 import com.ccnu.bbs.entity.Comment;
@@ -30,6 +31,9 @@ public class CommentController {
 
     @Autowired
     private LikeServiceImpl likeService;
+
+    @Autowired
+    private WxMaSecCheckService wxMaSecCheckService;
 
     /**
      * 评论列表
@@ -82,10 +86,15 @@ public class CommentController {
             throw new BBSException(ResultEnum.PARAM_ERROR.getCode(),
                     bindingResult.getFieldError().getDefaultMessage());
         }
+        // 2.检测是否含有敏感内容
+        Boolean safe = wxMaSecCheckService.checkMessage(commentForm.getCommentContent());
+        if (!safe){
+            return ResultVOUtil.error(ResultEnum.RISKY_CONTENT.getCode(), ResultEnum.RISKY_CONTENT.getMessage());
+        }
         try{
-            // 2.将评论保存进数据库中
+            // 3.将评论保存进数据库中
             Comment comment = commentService.createComment(userId, commentForm);
-            // 3.返回评论id
+            // 4.返回评论id
             HashMap<String, String> map = new HashMap();
             map.put("commentId", comment.getCommentId());
             return ResultVOUtil.success(map);

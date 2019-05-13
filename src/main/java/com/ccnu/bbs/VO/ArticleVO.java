@@ -14,6 +14,8 @@ public class ArticleVO {
     private String userName;
     /** 用户头像. */
     private String userImg;
+    /** 用户身份. */
+    private Integer userRole;
     /** 帖子标题. */
     private String articleTitle;
     /** 帖子内容. */

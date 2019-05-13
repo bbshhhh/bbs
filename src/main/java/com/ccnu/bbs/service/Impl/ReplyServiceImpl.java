@@ -2,10 +2,7 @@ package com.ccnu.bbs.service.Impl;
 
 import com.ccnu.bbs.VO.ReplyVO;
 import com.ccnu.bbs.converter.Date2StringConverter;
-import com.ccnu.bbs.entity.Comment;
-import com.ccnu.bbs.entity.Message;
-import com.ccnu.bbs.entity.Reply;
-import com.ccnu.bbs.entity.User;
+import com.ccnu.bbs.entity.*;
 import com.ccnu.bbs.enums.MessageEnum;
 import com.ccnu.bbs.enums.ResultEnum;
 import com.ccnu.bbs.exception.BBSException;
@@ -38,6 +35,9 @@ public class ReplyServiceImpl implements ReplyService {
     private UserServiceImpl userService;
 
     @Autowired
+    private PortrayServiceImpl portrayService;
+
+    @Autowired
     private MessageServiceImpl messageService;
 
     @Override
@@ -56,6 +56,9 @@ public class ReplyServiceImpl implements ReplyService {
             // 获得回复作者信息
             User user = userService.findUser(reply.getReplyUserId());
             BeanUtils.copyProperties(user, replyVO);
+            // 获得作者身份
+            Portray portray = portrayService.findPortray(reply.getReplyUserId());
+            replyVO.setUserRole(portray.getPortrayRoleId());
             // 获得时间
             replyVO.setReplyTime(Date2StringConverter.convert(reply.getReplyTime()));
             replyVOList.add(replyVO);

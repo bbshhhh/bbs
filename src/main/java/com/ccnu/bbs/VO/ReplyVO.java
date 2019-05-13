@@ -13,6 +13,8 @@ public class ReplyVO {
     private String userName;
     /** 用户头像. */
     private String userImg;
+    /** 用户身份. */
+    private Integer userRole;
     /** 回复内容. */
     private String replyContent;
     /** 回复时间. */
