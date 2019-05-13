@@ -34,7 +34,7 @@ spring:
     timeout: 5000
     #默认是索引为0的数据库
     database: 0
-#    password: 'ccnuPass@67867024'
+    password: 'ccnuPass@67867024'
   #  json格式化
   jackson:
     default-property-inclusion: non_null
@@ -51,4 +51,4 @@ qiniu:
 server:
   servlet:
     context-path: /bbs
-  port: 80
+  port: 8011
