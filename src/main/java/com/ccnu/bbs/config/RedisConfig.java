@@ -22,7 +22,6 @@ import java.time.Duration;
 
 @Configuration
 @EnableCaching
-@Component
 @Slf4j
 public class RedisConfig {
 

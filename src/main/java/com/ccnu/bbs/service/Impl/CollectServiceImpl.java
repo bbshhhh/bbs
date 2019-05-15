@@ -77,7 +77,8 @@ public class CollectServiceImpl implements CollectService {
         // 2.保存数据到数据库并清除redis中数据
         for (String collectKey : collectKeys){
             Collect collect = (Collect) redisTemplate.opsForValue().get(collectKey);
-            collectRepository.save(collect);
+            collect = collectRepository.save(collect);
+            redisTemplate.opsForValue().set(collectKey, collect);
 //            redisTemplate.delete(collectKey);
         }
         return;

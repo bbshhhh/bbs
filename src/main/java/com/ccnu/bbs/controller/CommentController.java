@@ -110,12 +110,13 @@ public class CommentController {
      * @return
      */
     @GetMapping("/content")
-    public ResultVO content(@RequestParam String commentId){
+    public ResultVO content(@RequestAttribute String userId,
+                            @RequestParam String commentId){
         if (commentId == null){
             return ResultVOUtil.error(ResultEnum.COMMENT_ID_ERROR.getCode(), ResultEnum.COMMENT_ID_ERROR.getMessage());
         }
         try{
-            return ResultVOUtil.success(commentService.findComment(commentId));
+            return ResultVOUtil.success(commentService.findComment(commentId, userId));
         }
         catch (BBSException e){
             return ResultVOUtil.error(e.getCode(), e.getMessage());

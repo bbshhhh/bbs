@@ -30,7 +30,9 @@ public class EleaticsearchInit implements ApplicationRunner {
     public void run(ApplicationArguments args) throws Exception {
         log.info("正在更新Elasticsearch数据-------- {}", sdf.format(new Date()));
         List<Article> articles = articleRepository.findAll();
-        articleSearchRepository.saveAll(articles).forEach(System.out::println);
+        if (articles != null && !articles.isEmpty()){
+            articleSearchRepository.saveAll(articles).forEach(System.out::println);
+        }
         log.info("更新Elasticsearch数据完成-------- {}", sdf.format(new Date()));
     }
 }

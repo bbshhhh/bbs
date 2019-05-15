@@ -152,13 +152,14 @@ public class ArticleController {
      * @return
      */
     @GetMapping("/content")
-    public ResultVO content(@RequestParam String articleId){
+    public ResultVO content(@RequestAttribute String userId,
+                            @RequestParam String articleId){
         // 查询帖子内容
         if (articleId == null){
             return ResultVOUtil.error(ResultEnum.ARTICLE_ID_ERROR.getCode(), ResultEnum.ARTICLE_ID_ERROR.getMessage());
         }
         try{
-            return ResultVOUtil.success(articleService.findArticle(articleId));
+            return ResultVOUtil.success(articleService.findArticle(articleId, userId));
         }catch (BBSException e){
             return ResultVOUtil.error(e.getCode(), e.getMessage());
         }

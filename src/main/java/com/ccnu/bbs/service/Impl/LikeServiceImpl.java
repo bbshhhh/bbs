@@ -193,7 +193,8 @@ public class LikeServiceImpl implements LikeService {
         // 2.保存数据到数据库并清除redis中数据
         for (String likeArticleKey : likeArticleKeys){
             LikeArticle likeArticle = (LikeArticle) redisTemplate.opsForValue().get(likeArticleKey);
-            likeArticleRepository.save(likeArticle);
+            likeArticle = likeArticleRepository.save(likeArticle);
+            redisTemplate.opsForValue().set(likeArticleKey, likeArticle);
 //            redisTemplate.delete(likeArticleKey);
         }
         return;
@@ -209,7 +210,8 @@ public class LikeServiceImpl implements LikeService {
         // 2.保存数据到数据库并清除redis中数据
         for (String likeCommentKey : likeCommentKeys){
             LikeComment likeComment = (LikeComment) redisTemplate.opsForValue().get(likeCommentKey);
-            likeCommentRepository.save(likeComment);
+            likeComment = likeCommentRepository.save(likeComment);
+            redisTemplate.opsForValue().set(likeCommentKey, likeComment);
 //            redisTemplate.delete(likeCommentKey);
         }
         return;

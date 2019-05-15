@@ -20,7 +20,7 @@ public interface CommentService {
     Comment createComment(String userId, CommentForm commentForm);
 
     /** 查看评论. */
-    CommentVO findComment(String commentId);
+    CommentVO findComment(String commentId, String userId);
 
     /** 从redis或数据库中得到评论. */
     Comment getComment(String commentId);

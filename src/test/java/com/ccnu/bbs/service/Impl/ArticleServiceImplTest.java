@@ -53,7 +53,7 @@ public class ArticleServiceImplTest {
 
     @Test
     public void findArticle() {
-        ArticleVO articleVO = articleService.findArticle(articleId);
+        ArticleVO articleVO = articleService.findArticle(articleId, userId);
         assertNotNull(articleVO);
     }
 

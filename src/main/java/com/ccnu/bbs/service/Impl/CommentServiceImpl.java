@@ -121,9 +121,9 @@ public class CommentServiceImpl implements CommentService {
     /**
      * 查看评论
      */
-    public CommentVO findComment(String commentId) throws BBSException{
+    public CommentVO findComment(String commentId, String userId) throws BBSException{
         Comment comment = getComment(commentId);
-        CommentVO commentVO = comment2commentVO(comment.getCommentUserId(), comment);
+        CommentVO commentVO = comment2commentVO(userId, comment);
         return commentVO;
     }
 

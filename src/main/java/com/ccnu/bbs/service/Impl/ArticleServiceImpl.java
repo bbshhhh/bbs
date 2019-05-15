@@ -179,13 +179,13 @@ public class ArticleServiceImpl implements ArticleService {
     /**
      * 浏览帖子
      */
-    public ArticleVO findArticle(String articleId) throws BBSException {
+    public ArticleVO findArticle(String articleId, String userId) throws BBSException {
         Article article = getArticle(articleId);
         ArticleVO articleVO;
         // 2.如果存在这篇帖子，将帖子浏览数+1，存入redis中
         article.setArticleViewNum(article.getArticleViewNum() + 1);
         redisTemplate.opsForValue().set("Article::" + articleId, article, 1, TimeUnit.HOURS);
-        articleVO = article2articleVO(article, article.getArticleUserId());
+        articleVO = article2articleVO(article, userId);
         return articleVO;
     }
 

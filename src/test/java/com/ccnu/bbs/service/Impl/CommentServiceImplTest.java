@@ -54,7 +54,7 @@ public class CommentServiceImplTest {
 
     @Test
     public void findComment() {
-        CommentVO comment = commentService.findComment(commentId);
+        CommentVO comment = commentService.findComment(commentId, userId);
         assertNotNull(comment);
     }
 

@@ -25,7 +25,7 @@ public interface ArticleService {
     String uploadImg(File file) throws IOException;
 
     /** 浏览帖子. */
-    ArticleVO findArticle(String articleId);
+    ArticleVO findArticle(String articleId, String userId);
 
     /** 查找帖子. */
     Article getArticle(String articleId);
