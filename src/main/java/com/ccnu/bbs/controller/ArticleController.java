@@ -79,13 +79,10 @@ public class ArticleController {
             File file = new File(Files.createTempDir(), multipartFile.getOriginalFilename());
             multipartFile.transferTo(file);
             try{
-                Boolean safe = wxMaSecCheckService.checkImage(file);
-                if (!safe){
-                    return ResultVOUtil.error(ResultEnum.RISKY_CONTENT.getCode(), ResultEnum.RISKY_CONTENT.getMessage());
-                }
+                wxMaSecCheckService.checkImage(file);
             }
-            catch (WxErrorException e){
-                return ResultVOUtil.error(e.getError().getErrorCode(), e.getError().getErrorMsg());
+            catch (WxErrorException e) {
+                return ResultVOUtil.error(ResultEnum.RISKY_CONTENT.getCode(), ResultEnum.RISKY_CONTENT.getMessage());
             }
             // 2.进行图片上传
             String imgUrl = articleService.uploadImg(file);

@@ -3,6 +3,7 @@ package com.ccnu.bbs.Interceptor;
 import cn.binarywang.wx.miniapp.bean.WxMaJscode2SessionResult;
 import com.ccnu.bbs.enums.ResultEnum;
 import com.ccnu.bbs.exception.BBSException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
@@ -11,6 +12,7 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+@Slf4j
 @Component
 public class AuthorizationInterceptor extends HandlerInterceptorAdapter {
 
@@ -21,6 +23,7 @@ public class AuthorizationInterceptor extends HandlerInterceptorAdapter {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws BBSException {
         // 1.获得请求头中的sessionId
         String sessionId = request.getParameter("sessionId");
+        log.info("--------sessionId:{}--------", sessionId);
         if (sessionId == null || !redisTemplate.hasKey("sessionId::" + sessionId)){
             throw new BBSException(ResultEnum.SESSION_ID_NULL);
         }

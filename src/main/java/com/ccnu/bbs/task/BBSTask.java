@@ -25,6 +25,9 @@ public class BBSTask extends QuartzJobBean {
     @Autowired
     private LikeServiceImpl likeService;
 
+    @Autowired
+    private CollectServiceImpl collectService;
+
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Override
@@ -35,5 +38,6 @@ public class BBSTask extends QuartzJobBean {
         commentService.updateCommentDatabase();
         likeService.updateLikeArticleDatabase();
         likeService.updateLikeCommentDatabase();
+        collectService.updateCollectDatabase();
     }
 }

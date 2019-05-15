@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class LikeServiceImpl implements LikeService {
@@ -117,11 +118,11 @@ public class LikeServiceImpl implements LikeService {
             }
         }
         // 将帖子存入redis
-        redisTemplate.opsForValue().set("Article::" + articleId, article);
+        redisTemplate.opsForValue().set("Article::" + articleId, article, 1, TimeUnit.HOURS);
         // 5.设置点赞状态
         likeArticle.setIsLike(likeArticleForm.getIsLike());
         // 6.将点赞信息存入redis
-        redisTemplate.opsForValue().set("LikeArticle::" + articleId + '-' + userId, likeArticle);
+        redisTemplate.opsForValue().set("LikeArticle::" + articleId + '-' + userId, likeArticle, 1, TimeUnit.HOURS);
         return likeArticle;
     }
 
@@ -173,11 +174,11 @@ public class LikeServiceImpl implements LikeService {
             }
         }
         // 将评论存入redis
-        redisTemplate.opsForValue().set("Comment::" + commentId, comment);
+        redisTemplate.opsForValue().set("Comment::" + commentId, comment, 1, TimeUnit.HOURS);
         // 6.设置点赞状态
         likeComment.setIsLike(likeCommentForm.getIsLike());
         // 7.将点赞信息存入redis
-        redisTemplate.opsForValue().set("LikeComment::" + commentId + '-' + userId, likeComment);
+        redisTemplate.opsForValue().set("LikeComment::" + commentId + '-' + userId, likeComment, 1, TimeUnit.HOURS);
         return likeComment;
     }
 
@@ -193,7 +194,7 @@ public class LikeServiceImpl implements LikeService {
         for (String likeArticleKey : likeArticleKeys){
             LikeArticle likeArticle = (LikeArticle) redisTemplate.opsForValue().get(likeArticleKey);
             likeArticleRepository.save(likeArticle);
-            redisTemplate.delete(likeArticleKey);
+//            redisTemplate.delete(likeArticleKey);
         }
         return;
     }
@@ -209,7 +210,7 @@ public class LikeServiceImpl implements LikeService {
         for (String likeCommentKey : likeCommentKeys){
             LikeComment likeComment = (LikeComment) redisTemplate.opsForValue().get(likeCommentKey);
             likeCommentRepository.save(likeComment);
-            redisTemplate.delete(likeCommentKey);
+//            redisTemplate.delete(likeCommentKey);
         }
         return;
     }

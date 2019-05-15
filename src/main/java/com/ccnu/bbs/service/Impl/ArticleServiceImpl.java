@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 
@@ -115,7 +116,7 @@ public class ArticleServiceImpl implements ArticleService {
         SearchQuery searchQuery = new NativeSearchQueryBuilder().
                 withQuery(qb).
                 withPageable(pageable).build();
-        log.info("\n searchAritcle(): searchContent [" + searchKey + "] \n DSL  = \n " + searchQuery.getQuery().toString());
+//        log.info("\n searchAritcle(): searchContent [" + searchKey + "] \n DSL  = \n " + searchQuery.getQuery().toString());
         // 搜索，获取结果
         Page<Article> articles = articleSearchRepository.search(searchQuery);
         // 2.对每一篇帖子进行拼装
@@ -183,7 +184,7 @@ public class ArticleServiceImpl implements ArticleService {
         ArticleVO articleVO;
         // 2.如果存在这篇帖子，将帖子浏览数+1，存入redis中
         article.setArticleViewNum(article.getArticleViewNum() + 1);
-        redisTemplate.opsForValue().set("Article::" + articleId, article);
+        redisTemplate.opsForValue().set("Article::" + articleId, article, 1, TimeUnit.HOURS);
         articleVO = article2articleVO(article, article.getArticleUserId());
         return articleVO;
     }
@@ -265,7 +266,7 @@ public class ArticleServiceImpl implements ArticleService {
             // 4.保存帖子进数据库及es，并删除redis里的数据
             articleRepository.save(article);
             articleSearchRepository.save(article);
-            redisTemplate.delete(articleKey);
+//            redisTemplate.delete(articleKey);
         }
         return;
     }

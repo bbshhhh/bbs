@@ -9,11 +9,11 @@ import com.ccnu.bbs.repository.UserRepository;
 import com.ccnu.bbs.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
@@ -25,13 +25,19 @@ public class UserServiceImpl implements UserService {
     @Autowired
     PortrayServiceImpl portrayService;
 
+    @Autowired
+    RedisTemplate<String, Object> redisTemplate;
+
     @Override
     /**
      * 查找用户
      */
-    @Cacheable(cacheNames = "User", key = "#userId")
     public User findUser(String userId) {
-        return userRepository.findByUserId(userId);
+        User user = getUser(userId);
+        if (user != null){
+            redisTemplate.opsForValue().set("User::" + userId, user, 1, TimeUnit.HOURS);
+        }
+        return user;
     }
 
     @Override
@@ -42,8 +48,9 @@ public class UserServiceImpl implements UserService {
     public User createUser(String userId) {
         User user = new User();
         user.setUserId(userId);
+        user = userRepository.save(user);
         portrayService.savePortray(userId, RoleEnum.USER.getCode());
-        return userRepository.save(user);
+        return user;
     }
 
     @Override
@@ -51,10 +58,9 @@ public class UserServiceImpl implements UserService {
      * 更新用户信息
      */
     @Transactional
-    @CacheEvict(cacheNames = "User", key = "#userInfo.openId")
     public User updateUser(WxMaUserInfo userInfo) {
         String userId = userInfo.getOpenId();
-        User user = userRepository.findByUserId(userId);
+        User user = getUser(userId);
         if (user == null){
             throw new BBSException(ResultEnum.USER_NOT_EXIT);
         }
@@ -64,6 +70,18 @@ public class UserServiceImpl implements UserService {
         user.setUserProvince(userInfo.getProvince());
         user.setUserCountry(userInfo.getCountry());
         user.setUserImg(userInfo.getAvatarUrl());
+        redisTemplate.delete("User::" + userId);
         return userRepository.save(user);
+    }
+
+    private User getUser(String userId){
+        User user;
+        if (redisTemplate.hasKey("User::" + userId)){
+            user = (User)redisTemplate.opsForValue().get("User::" + userId);
+        }
+        else {
+            user = userRepository.findByUserId(userId);
+        }
+        return user;
     }
 }

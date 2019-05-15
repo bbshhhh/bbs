@@ -29,8 +29,8 @@ public class UserServiceImplTest {
 
     @Test
     public void createUser() {
-//        User user = userService.createUser("789");
-//        assertNotNull(user);
+        User user = userService.createUser("1111");
+        assertNotNull(user);
     }
 
     @Test

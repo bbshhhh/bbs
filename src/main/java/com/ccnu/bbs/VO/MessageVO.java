@@ -25,4 +25,6 @@ public class MessageVO {
     private String messageContent;
     /** 消息创建时间. */
     private String messageTime;
+    /** 消息是否已读. */
+    private Integer isRead;
 }

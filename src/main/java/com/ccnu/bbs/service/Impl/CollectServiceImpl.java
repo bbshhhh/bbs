@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class CollectServiceImpl implements CollectService {
@@ -61,7 +62,7 @@ public class CollectServiceImpl implements CollectService {
         // 3.设置收藏标志并保存
         collect.setIsCollect(collectForm.getIsCollect());
         // 4.将收藏存入redis中
-        redisTemplate.opsForValue().set("Collect::" + articleId + '-' + userId, collect);
+        redisTemplate.opsForValue().set("Collect::" + articleId + '-' + userId, collect, 1, TimeUnit.HOURS);
         return collect;
     }
 
@@ -77,7 +78,7 @@ public class CollectServiceImpl implements CollectService {
         for (String collectKey : collectKeys){
             Collect collect = (Collect) redisTemplate.opsForValue().get(collectKey);
             collectRepository.save(collect);
-            redisTemplate.delete(collectKey);
+//            redisTemplate.delete(collectKey);
         }
         return;
     }

@@ -83,9 +83,11 @@ public class MessageServiceImpl implements MessageService {
         messageVO.setSenderUserImg(user.getUserImg());
         // 获得时间
         messageVO.setMessageTime(Date2StringConverter.convert(message.getMessageTime()));
-        // 将消息设为已读,存入数据库
-        message.setIsRead(MessageStatusEnum.READ.getCode());
-        messageRepository.save(message);
+        // 若为未读消息,将消息设为已读,存入数据库
+        if (message.getIsRead() == MessageStatusEnum.NOT_READ.getCode()){
+            message.setIsRead(MessageStatusEnum.READ.getCode());
+            messageRepository.save(message);
+        }
         return messageVO;
     }
 }

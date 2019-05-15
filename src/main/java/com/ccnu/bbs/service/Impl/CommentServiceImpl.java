@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -99,7 +100,7 @@ public class CommentServiceImpl implements CommentService {
         // 5.将帖子评论数+1，存入redis中
         if (article != null){
             article.setArticleCommentNum(article.getArticleCommentNum() + 1);
-            redisTemplate.opsForValue().set("Article::" + comment.getCommentArticleId(), article);
+            redisTemplate.opsForValue().set("Article::" + comment.getCommentArticleId(), article, 1, TimeUnit.HOURS);
         }
         updateCommentDatabase();
         articleService.updateArticleDatabase();
@@ -140,7 +141,7 @@ public class CommentServiceImpl implements CommentService {
             if (comment == null){
                 throw new BBSException(ResultEnum.COMMENT_NOT_EXIT);
             }
-            redisTemplate.opsForValue().set("Comment::" + commentId, comment);
+            redisTemplate.opsForValue().set("Comment::" + commentId, comment, 1, TimeUnit.HOURS);
         }
         return comment;
     }
@@ -158,7 +159,7 @@ public class CommentServiceImpl implements CommentService {
             Comment comment = (Comment) redisTemplate.opsForValue().get(commentKey);
             // 4.保存帖子进数据库，并删除redis里的数据
             commentRepository.save(comment);
-            redisTemplate.delete(commentKey);
+//            redisTemplate.delete(commentKey);
         }
         return;
     }
