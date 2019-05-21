@@ -29,10 +29,8 @@ import org.springframework.data.elasticsearch.core.query.SearchQuery;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -70,9 +68,9 @@ public class ArticleServiceImpl implements ArticleService {
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
-    private static final Double VIEW_NUM_WEIGHT = 1.0;
-    private static final Double COMMENT_NUM_WEIGHT = 2.0;
-    private static final Double LIKE_NUM_WEIGHT = 3.0;
+    private static final Double VIEW_NUM_WEIGHT = 100.0;
+    private static final Double COMMENT_NUM_WEIGHT = 200.0;
+    private static final Double LIKE_NUM_WEIGHT = 300.0;
     private static final Double TIME_WEIGHT = - 1.0;
 
     @Override
@@ -84,7 +82,20 @@ public class ArticleServiceImpl implements ArticleService {
         Page<Article> articles = articleRepository.findAll(pageable);
         // 2.对每一篇帖子进行拼装
         List<ArticleVO> articleVOList = articles.stream().
-                map(e -> article2articleVO(e, e.getArticleId())).collect(Collectors.toList());
+                map(e -> article2articleVO(e, null)).collect(Collectors.toList());
+        return new PageImpl(articleVOList, pageable, articles.getTotalElements());
+    }
+
+    @Override
+    /**
+     * 版块帖子列表
+     */
+    public Page<ArticleVO> topicArticle(Integer topicType, Pageable pageable){
+        // 1.查找出特定版块帖子列表并按热度排序
+        Page<Article> articles = articleRepository.findAllByTopic(topicType, pageable);
+        // 2.对每一篇帖子进行拼装
+        List<ArticleVO> articleVOList = articles.stream().
+                map(e -> article2articleVO(e, null)).collect(Collectors.toList());
         return new PageImpl(articleVOList, pageable, articles.getTotalElements());
     }
 
@@ -121,7 +132,7 @@ public class ArticleServiceImpl implements ArticleService {
         Page<Article> articles = articleSearchRepository.search(searchQuery);
         // 2.对每一篇帖子进行拼装
         List<ArticleVO> articleVOList = articles.stream().
-                map(e -> article2articleVO(e, e.getArticleId())).collect(Collectors.toList());
+                map(e -> article2articleVO(e, null)).collect(Collectors.toList());
         return new PageImpl(articleVOList, pageable, articles.getTotalElements());
     }
 
@@ -232,7 +243,7 @@ public class ArticleServiceImpl implements ArticleService {
         Page<Article> articles = articleRepository.findUserArticle(userId, pageable);
         // 2.对每一篇帖子进行拼装
         List<ArticleVO> articleVOList = articles.stream().
-                map(e -> article2articleVO(e, e.getArticleId())).collect(Collectors.toList());
+                map(e -> article2articleVO(e, userId)).collect(Collectors.toList());
         return new PageImpl(articleVOList, pageable, articles.getTotalElements());
     }
 
@@ -246,7 +257,7 @@ public class ArticleServiceImpl implements ArticleService {
         Page<Article> articles = articleRepository.findUserCollect(userId, pageable);
         // 2.对每一篇帖子进行拼装
         List<ArticleVO> articleVOList = articles.stream().
-                map(e -> article2articleVO(e, e.getArticleId())).collect(Collectors.toList());
+                map(e -> article2articleVO(e, null)).collect(Collectors.toList());
         return new PageImpl(articleVOList, pageable, articles.getTotalElements());
     }
 
@@ -301,8 +312,12 @@ public class ArticleServiceImpl implements ArticleService {
         User user = userService.findUser(article.getArticleUserId());
         BeanUtils.copyProperties(user, articleVO);
         // 查看作者身份
-        Portray portray = portrayService.findPortray(article.getArticleUserId());
+        Portray portray = portrayService.findPortray(user.getUserId());
         articleVO.setUserRole(portray.getPortrayRoleId());
+        // 查看是不是当前用户所发帖子
+        if (userId != null){
+            articleVO.setIsOneself(userId.equals(user.getUserId()) ? true : false);
+        }
         // 设定时间
         articleVO.setArticleCreateTime(Date2StringConverter.convert(article.getArticleCreateTime()));
         // 获得图片url

@@ -58,12 +58,12 @@ public class CommentServiceImpl implements CommentService {
     /**
      * 热评列表
      */
-    public List<CommentVO> hotArticleComment(String articleId){
+    public List<CommentVO> hotArticleComment(String userId, String articleId){
         // 1.根据帖子id查询评论，并按照点赞数降序排列(取前3的评论)
         List<Comment> comments = commentRepository.findArticleCommentByLike(articleId);
         // 2.对每一个评论加入评论作者信息和回复信息
         List<CommentVO> commentVOList = comments.stream().
-                map(e -> comment2commentVO(e.getCommentUserId(), e)).collect(Collectors.toList());
+                map(e -> comment2commentVO(userId, e)).collect(Collectors.toList());
         return commentVOList;
     }
 
@@ -71,12 +71,12 @@ public class CommentServiceImpl implements CommentService {
     /**
      * 查询帖子评论列表
      */
-    public Page<CommentVO> articleComment(String articleId, Pageable pageable) {
+    public Page<CommentVO> articleComment(String userId, String articleId, Pageable pageable) {
         // 1.根据帖子id查询评论，并按照评论时间升序排列
         Page<Comment> comments = commentRepository.findArticleCommentByTime(articleId, pageable);
         // 2.对每一个评论加入评论作者信息和回复信息
         List<CommentVO> commentVOList = comments.stream().
-                map(e -> comment2commentVO(e.getCommentUserId(), e)).collect(Collectors.toList());
+                map(e -> comment2commentVO(userId, e)).collect(Collectors.toList());
         return new PageImpl(commentVOList, pageable, comments.getTotalElements());
     }
 
@@ -184,8 +184,10 @@ public class CommentServiceImpl implements CommentService {
         // 查找作者身份
         Portray portray = portrayService.findPortray(comment.getCommentUserId());
         commentVO.setUserRole(portray.getPortrayRoleId());
+        // 查看是否是当前用户所发评论
+        commentVO.setIsOneself(userId.equals(user.getUserId()) ? true : false);
         // 查找回复信息
-        List<ReplyVO> replies = replyService.commentReply(comment.getCommentId(), PageRequest.of(0, 3)).getContent();
+        List<ReplyVO> replies = replyService.commentReply(userId, comment.getCommentId(), PageRequest.of(0, 3)).getContent();
         commentVO.setReplies(replies);
         // 查看评论是否被当前用户点赞
         commentVO.setIsLike(likeService.isCommentLike(comment.getCommentId(), userId));

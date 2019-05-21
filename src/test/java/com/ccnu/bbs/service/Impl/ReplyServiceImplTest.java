@@ -36,7 +36,7 @@ public class ReplyServiceImplTest {
 
     @Test
     public void commentReply() {
-        Page<ReplyVO> replies = replyService.commentReply(commentId, PageRequest.of(0, 2));
+        Page<ReplyVO> replies = replyService.commentReply(userId, commentId, PageRequest.of(0, 2));
         assertNotEquals(0, replies.getTotalElements());
     }
 }

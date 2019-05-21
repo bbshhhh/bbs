@@ -37,20 +37,22 @@ public class CommentController {
 
     /**
      * 评论列表
+     * @param userId
      * @param articleId
      * @param page
      * @param size
      * @return
      */
     @GetMapping("/list")
-    public ResultVO list(@RequestParam String articleId,
+    public ResultVO list(@RequestAttribute String userId,
+                         @RequestParam String articleId,
                          @RequestParam(value = "page", defaultValue = "1") Integer page,
                          @RequestParam(value = "size", defaultValue = "10") Integer size){
         // 1.校验帖子id
         if (articleId == null||articleId.isEmpty()){
             return ResultVOUtil.error(ResultEnum.ARTICLE_ID_ERROR.getCode(), ResultEnum.ARTICLE_ID_ERROR.getMessage());
         }
-        Page<CommentVO> commentVOList = commentService.articleComment(articleId, PageRequest.of(page - 1, size));
+        Page<CommentVO> commentVOList = commentService.articleComment(userId, articleId, PageRequest.of(page - 1, size));
         return ResultVOUtil.success(commentVOList);
     }
 
@@ -60,12 +62,13 @@ public class CommentController {
      * @return
      */
     @GetMapping("/hot")
-    public ResultVO hot(@RequestParam String articleId){
+    public ResultVO hot(@RequestAttribute String userId,
+                        @RequestParam String articleId){
         // 1.校验帖子id
         if (articleId == null||articleId.isEmpty()){
             return ResultVOUtil.error(ResultEnum.ARTICLE_ID_ERROR.getCode(), ResultEnum.ARTICLE_ID_ERROR.getMessage());
         }
-        List<CommentVO> commentVOList = commentService.hotArticleComment(articleId);
+        List<CommentVO> commentVOList = commentService.hotArticleComment(userId, articleId);
         return  ResultVOUtil.success(commentVOList);
     }
 

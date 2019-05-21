@@ -46,18 +46,33 @@ public class ArticleController {
 
     /**
      * 帖子列表
+     * @param topicType
      * @param page
      * @param size
      * @return
      */
     @GetMapping("/list")
-    public ResultVO list(@RequestParam(value = "page", defaultValue = "1") Integer page,
+    public ResultVO list(@RequestParam(required = false) Integer topicType,
+                         @RequestParam(value = "page", defaultValue = "1") Integer page,
                          @RequestParam(value = "size", defaultValue = "10") Integer size){
+        Page<ArticleVO> articles;
         // 查询帖子列表
-        Page<ArticleVO> articles = articleService.allArticle(PageRequest.of(page - 1, size));
+        if (topicType != null){
+            articles = articleService.topicArticle(topicType, PageRequest.of(page - 1, size));
+        }
+        else {
+            articles = articleService.allArticle(PageRequest.of(page - 1, size));
+        }
         return ResultVOUtil.success(articles);
     }
 
+    /**
+     * 帖子搜索
+     * @param searchKey
+     * @param page
+     * @param size
+     * @return
+     */
     @GetMapping("/search")
     public ResultVO search(@RequestParam String searchKey,
                            @RequestParam(value = "page", defaultValue = "1") Integer page,

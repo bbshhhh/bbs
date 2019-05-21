@@ -37,14 +37,15 @@ public class ReplyController {
      * @return
      */
     @GetMapping("/list")
-    public ResultVO list(@RequestParam String commentId,
+    public ResultVO list(@RequestAttribute String userId,
+                         @RequestParam String commentId,
                          @RequestParam(value = "page", defaultValue = "1") Integer page,
                          @RequestParam(value = "size", defaultValue = "10") Integer size){
         // 1.校验评论id
         if (commentId == null||commentId.isEmpty()){
             return ResultVOUtil.error(ResultEnum.COMMENT_ID_ERROR.getCode(), ResultEnum.COMMENT_ID_ERROR.getMessage());
         }
-        Page<ReplyVO> replies = replyService.commentReply(commentId, PageRequest.of(page - 1, size));
+        Page<ReplyVO> replies = replyService.commentReply(userId, commentId, PageRequest.of(page - 1, size));
         return ResultVOUtil.success(replies);
     }
 

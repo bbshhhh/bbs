@@ -25,6 +25,8 @@ public class Article implements Serializable {
     @Id
     @org.springframework.data.annotation.Id
     private String articleId;
+    /** 帖子所属版块id. */
+    private Integer articleTopicType;
     /** 用户id. */
     private String articleUserId;
     /** 帖子标题. */

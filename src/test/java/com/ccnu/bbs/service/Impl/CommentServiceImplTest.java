@@ -31,14 +31,14 @@ public class CommentServiceImplTest {
 
     @Test
     public void hotArticleComment() {
-        List<CommentVO> comments = commentService.hotArticleComment(articleId);
+        List<CommentVO> comments = commentService.hotArticleComment(userId,articleId);
         comments.forEach(System.out::println);
 //        assertNotEquals(0, comments.size());
     }
 
     @Test
     public void articleComment() {
-        Page<CommentVO> comments = commentService.articleComment(articleId, PageRequest.of(0, 2));
+        Page<CommentVO> comments = commentService.articleComment(userId, articleId, PageRequest.of(0, 2));
         comments.forEach(System.out::println);
         assertNotEquals(0, comments.getTotalElements());
     }

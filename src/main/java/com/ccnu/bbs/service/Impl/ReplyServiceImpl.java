@@ -44,7 +44,7 @@ public class ReplyServiceImpl implements ReplyService {
     /**
      * 查找评论的回复列表
      */
-    public Page<ReplyVO> commentReply(String commentId, Pageable pageable) {
+    public Page<ReplyVO> commentReply(String userId, String commentId, Pageable pageable) {
         // 1.根据评论id查询出回复
         Page<Reply> replies = replyRepository.findCommentReply(commentId, pageable);
         List<ReplyVO> replyVOList = new ArrayList();
@@ -59,6 +59,8 @@ public class ReplyServiceImpl implements ReplyService {
             // 获得作者身份
             Portray portray = portrayService.findPortray(reply.getReplyUserId());
             replyVO.setUserRole(portray.getPortrayRoleId());
+            // 查看是否是当前用户所发回复
+            replyVO.setIsOneself(userId.equals(user.getUserId()) ? true : false);
             // 获得时间
             replyVO.setReplyTime(Date2StringConverter.convert(reply.getReplyTime()));
             replyVOList.add(replyVO);

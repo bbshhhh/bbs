@@ -15,6 +15,8 @@ public class ReplyVO {
     private String userImg;
     /** 用户身份. */
     private Integer userRole;
+    /** 是否是本人. */
+    private Boolean isOneself;
     /** 回复内容. */
     private String replyContent;
     /** 回复时间. */

@@ -21,6 +21,11 @@ public class ArticleRepositoryTest {
     }
 
     @Test
+    public void findAllByZoneTest(){
+        articleRepository.findAllByTopic(0, PageRequest.of(0, 2)).forEach(System.out::println);
+    }
+
+    @Test
     public void findUserArticleTest(){
         articleRepository.findUserArticle("123", PageRequest.of(0, 1)).forEach(System.out::println);
     }

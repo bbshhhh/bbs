@@ -16,6 +16,8 @@ public class CommentVO {
     private String userImg;
     /** 用户身份. */
     private Integer userRole;
+    /** 是否是本人. */
+    private Boolean isOneself;
     /** 评论内容. */
     private String commentContent;
     /** 评论点赞数. */

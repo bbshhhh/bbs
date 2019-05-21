@@ -11,10 +11,10 @@ import java.util.List;
 public interface CommentService {
 
     /** 热评列表. */
-    List<CommentVO> hotArticleComment(String articleId);
+    List<CommentVO> hotArticleComment(String userId, String articleId);
 
     /** 查询评论列表. */
-    Page<CommentVO> articleComment(String articleId, Pageable pageable);
+    Page<CommentVO> articleComment(String userId, String articleId, Pageable pageable);
 
     /** 创建评论. */
     Comment createComment(String userId, CommentForm commentForm);
