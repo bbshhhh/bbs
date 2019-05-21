@@ -52,12 +52,12 @@ public class ArticleController {
      * @return
      */
     @GetMapping("/list")
-    public ResultVO list(@RequestParam(required = false) Integer topicType,
+    public ResultVO list(@RequestParam(value = "topicType", defaultValue = "0") Integer topicType,
                          @RequestParam(value = "page", defaultValue = "1") Integer page,
                          @RequestParam(value = "size", defaultValue = "10") Integer size){
         Page<ArticleVO> articles;
         // 查询帖子列表
-        if (topicType != null){
+        if (topicType == 0){
             articles = articleService.topicArticle(topicType, PageRequest.of(page - 1, size));
         }
         else {
