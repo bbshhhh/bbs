@@ -3,7 +3,6 @@ package com.ccnu.bbs.service.Impl;
 import com.ccnu.bbs.VO.ArticleVO;
 import com.ccnu.bbs.converter.Date2StringConverter;
 import com.ccnu.bbs.entity.Article;
-import com.ccnu.bbs.entity.Portray;
 import com.ccnu.bbs.entity.User;
 import com.ccnu.bbs.enums.DeleteEnum;
 import com.ccnu.bbs.enums.ResultEnum;
@@ -52,9 +51,6 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Autowired
     private UserServiceImpl userService;
-
-    @Autowired
-    private PortrayServiceImpl portrayService;
 
     @Autowired
     private LikeServiceImpl likeService;
@@ -312,8 +308,7 @@ public class ArticleServiceImpl implements ArticleService {
         User user = userService.findUser(article.getArticleUserId());
         BeanUtils.copyProperties(user, articleVO);
         // 查看作者身份
-        Portray portray = portrayService.findPortray(user.getUserId());
-        articleVO.setUserRole(portray.getPortrayRoleId());
+        articleVO.setUserRole(user.getUserRoleType());
         // 查看是不是当前用户所发帖子
         if (userId != null){
             articleVO.setIsOneself(userId.equals(user.getUserId()) ? true : false);

@@ -35,9 +35,6 @@ public class ReplyServiceImpl implements ReplyService {
     private UserServiceImpl userService;
 
     @Autowired
-    private PortrayServiceImpl portrayService;
-
-    @Autowired
     private MessageServiceImpl messageService;
 
     @Override
@@ -57,8 +54,7 @@ public class ReplyServiceImpl implements ReplyService {
             User user = userService.findUser(reply.getReplyUserId());
             BeanUtils.copyProperties(user, replyVO);
             // 获得作者身份
-            Portray portray = portrayService.findPortray(reply.getReplyUserId());
-            replyVO.setUserRole(portray.getPortrayRoleId());
+            replyVO.setUserRole(user.getUserRoleType());
             // 查看是否是当前用户所发回复
             replyVO.setIsOneself(userId.equals(user.getUserId()) ? true : false);
             // 获得时间

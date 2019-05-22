@@ -16,9 +16,11 @@ public class RoleRepositoryTest {
     @Autowired
     RoleRepository roleRepository;
 
+    private final static String userId = "oRp4Z402QnQqQIdcR3C3Z3fyIQu4";
+
     @Test
     public void findUserRoleTest() {
-        Role res = roleRepository.findUserRole("123");
+        Role res = roleRepository.findUserRole(userId);
         Assert.assertNotNull(res);
     }
 }

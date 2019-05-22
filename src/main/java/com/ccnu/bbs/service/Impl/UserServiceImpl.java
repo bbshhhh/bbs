@@ -22,8 +22,6 @@ public class UserServiceImpl implements UserService {
     @Autowired
     UserRepository userRepository;
 
-    @Autowired
-    PortrayServiceImpl portrayService;
 
     @Autowired
     RedisTemplate<String, Object> redisTemplate;
@@ -47,9 +45,9 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public User createUser(String userId) {
         User user = new User();
+        user.setUserRoleType(RoleEnum.USER.getCode());
         user.setUserId(userId);
         user = userRepository.save(user);
-        portrayService.savePortray(userId, RoleEnum.USER.getCode());
         return user;
     }
 

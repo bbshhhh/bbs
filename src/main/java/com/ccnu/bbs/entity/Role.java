@@ -16,6 +16,8 @@ public class Role implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer roleId;
+    /** 身份类型. */
+    private Integer roleType;
     /** 身份名称. */
     private String roleName;
 }

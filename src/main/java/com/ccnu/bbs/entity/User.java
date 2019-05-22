@@ -22,6 +22,8 @@ public class User implements Serializable {
     private String userId;
     /** 用户昵称. */
     private String userName;
+    /** 用户身份. */
+    private Integer userRoleType;
     /** 用户性别. */
     private Integer userGender;
     /** 用户经验. */

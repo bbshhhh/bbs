@@ -40,9 +40,6 @@ public class CommentServiceImpl implements CommentService {
     private UserServiceImpl userService;
 
     @Autowired
-    private PortrayServiceImpl portrayService;
-
-    @Autowired
     private ReplyServiceImpl replyService;
 
     @Autowired
@@ -182,8 +179,7 @@ public class CommentServiceImpl implements CommentService {
         User user = userService.findUser(comment.getCommentUserId());
         BeanUtils.copyProperties(user, commentVO);
         // 查找作者身份
-        Portray portray = portrayService.findPortray(comment.getCommentUserId());
-        commentVO.setUserRole(portray.getPortrayRoleId());
+        commentVO.setUserRole(user.getUserRoleType());
         // 查看是否是当前用户所发评论
         commentVO.setIsOneself(userId.equals(user.getUserId()) ? true : false);
         // 查找回复信息
