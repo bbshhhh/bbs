@@ -58,10 +58,10 @@ public class ArticleController {
         Page<ArticleVO> articles;
         // 查询帖子列表
         if (topicType == 0){
-            articles = articleService.topicArticle(topicType, PageRequest.of(page - 1, size));
+            articles = articleService.allArticle(PageRequest.of(page - 1, size));
         }
         else {
-            articles = articleService.allArticle(PageRequest.of(page - 1, size));
+            articles = articleService.topicArticle(topicType, PageRequest.of(page - 1, size));
         }
         return ResultVOUtil.success(articles);
     }

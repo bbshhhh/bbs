@@ -18,7 +18,7 @@ public enum  ResultEnum {
     ARTICLE_NOT_EXIT(10, "帖子不存在"),
     COMMENT_NOT_EXIT(11, "评论不存在"),
     REPLY_NOT_EXIT(12, "回复不存在"),
-    RISKY_CONTENT(13, "含有敏感内容"),
+    RISKY_CONTENT(13, "怀疑你在搞黄色哦"),
     ;
 
     private Integer code;

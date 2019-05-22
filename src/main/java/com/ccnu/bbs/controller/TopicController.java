@@ -17,8 +17,13 @@ public class TopicController {
     @Autowired
     private TopicServiceImpl topicService;
 
+    @GetMapping("/all")
+    public ResultVO all(){
+        return ResultVOUtil.success(topicService.allTopic());
+    }
+
     @GetMapping("/list")
     public ResultVO list(){
-        return ResultVOUtil.success(topicService.allTopic());
+        return ResultVOUtil.success(topicService.listTopic());
     }
 }

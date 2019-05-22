@@ -2,7 +2,6 @@ package com.ccnu.bbs.service.Impl;
 
 import com.ccnu.bbs.VO.TopicVO;
 import com.ccnu.bbs.converter.Topic2TopicVO;
-import com.ccnu.bbs.entity.Topic;
 import com.ccnu.bbs.repository.TopicRepository;
 import com.ccnu.bbs.service.TopicService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +21,14 @@ public class TopicServiceImpl implements TopicService {
     /**
      * 获取所有版块
      */
-    @Cacheable(value = "Topics")
+    @Cacheable(value = "allTopics")
     public List<TopicVO> allTopic() {
         return Topic2TopicVO.convert(topicRepository.findAll());
+    }
+
+    @Override
+    @Cacheable(value = "listTopics")
+    public List<TopicVO> listTopic(){
+        return Topic2TopicVO.convert(topicRepository.topicList());
     }
 }
