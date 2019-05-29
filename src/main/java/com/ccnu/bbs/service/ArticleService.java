@@ -3,6 +3,8 @@ package com.ccnu.bbs.service;
 import com.ccnu.bbs.VO.ArticleVO;
 import com.ccnu.bbs.entity.Article;
 import com.ccnu.bbs.forms.ArticleForm;
+import com.qiniu.common.QiniuException;
+import com.qiniu.http.Response;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,7 +27,10 @@ public interface ArticleService {
     Article createArticle(String userId, ArticleForm articleForm);
 
     /** 上传图片. */
-    String uploadImg(File file) throws IOException;
+    String uploadImg(File file) throws QiniuException;
+
+    /** 删除图片. */
+    Response deleteImg(String imgUrl) throws QiniuException;
 
     /** 浏览帖子. */
     ArticleVO findArticle(String articleId, String userId);

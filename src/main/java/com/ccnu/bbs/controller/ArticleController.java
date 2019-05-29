@@ -14,6 +14,8 @@ import com.ccnu.bbs.service.Impl.CollectServiceImpl;
 import com.ccnu.bbs.service.Impl.LikeServiceImpl;
 import com.ccnu.bbs.utils.ResultVOUtil;
 import com.google.common.io.Files;
+import com.qiniu.common.QiniuException;
+import com.qiniu.http.Response;
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.error.WxErrorException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -102,11 +104,34 @@ public class ArticleController {
             // 2.进行图片上传
             String imgUrl = articleService.uploadImg(file);
             return ResultVOUtil.success(imgUrl);
+        }catch (QiniuException e) {
+            e.printStackTrace();
+            return ResultVOUtil.error(e.code(), e.error());
         }catch (IOException e){
             e.printStackTrace();
             return ResultVOUtil.error(ResultEnum.UPLOAD_ERROR.getCode(), ResultEnum.UPLOAD_ERROR.getMessage());
         }
 
+    }
+
+    /**
+     * 图片上传取消
+     * @param imgUrl
+     * @return
+     */
+    @GetMapping("/cancel")
+    public ResultVO cancel(@RequestParam String imgUrl){
+        try{
+            Response response = articleService.deleteImg(imgUrl);
+            if (response.isOK()){
+                return ResultVOUtil.success();
+            }
+            else {
+                return ResultVOUtil.error(response.statusCode, response.error);
+            }
+        }catch (QiniuException e){
+            return ResultVOUtil.error(e.code(), e.error());
+        }
     }
 
     /**

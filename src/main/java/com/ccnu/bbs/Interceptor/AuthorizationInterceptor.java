@@ -20,12 +20,13 @@ public class AuthorizationInterceptor extends HandlerInterceptorAdapter {
     RedisTemplate<Object, Object> redisTemplate;
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws BBSException {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         // 1.获得请求头中的sessionId
         String sessionId = request.getParameter("sessionId");
         log.info("--------sessionId:{}--------", sessionId);
         if (sessionId == null || !redisTemplate.hasKey("sessionId::" + sessionId)){
-            throw new BBSException(ResultEnum.SESSION_ID_NULL);
+            log.error(ResultEnum.SESSION_ID_NULL.getMessage());
+            return false;
         }
         // 2.得到用户信息
         WxMaJscode2SessionResult session = (WxMaJscode2SessionResult) redisTemplate.opsForValue().get("sessionId::" + sessionId);

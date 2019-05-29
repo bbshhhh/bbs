@@ -12,6 +12,8 @@ import com.ccnu.bbs.repository.*;
 import com.ccnu.bbs.searchRepository.ArticleSearchRepository;
 import com.ccnu.bbs.service.ArticleService;
 import com.ccnu.bbs.utils.KeyUtil;
+import com.qiniu.common.QiniuException;
+import com.qiniu.http.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.common.lucene.search.function.FunctionScoreQuery;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -170,7 +172,7 @@ public class ArticleServiceImpl implements ArticleService {
     /**
      * 上传图片
      */
-    public String uploadImg(File file) throws IOException{
+    public String uploadImg(File file) throws QiniuException {
         // 1.创建存储url的字符串
         String imgUrl = new String();
         // 2.判断文件是否存在
@@ -180,6 +182,15 @@ public class ArticleServiceImpl implements ArticleService {
         // 3.使用KeyUtil生成唯一主键作为key进行上传，返回图片url
         imgUrl = qiniuService.uploadFile(file, "bbs/" + KeyUtil.genUniqueKey());
         return imgUrl;
+    }
+
+    @Override
+    /**
+     * 删除图片
+     */
+    public Response deleteImg(String imgUrl) throws QiniuException {
+        String key = imgUrl.substring(25);
+        return qiniuService.delete(key);
     }
 
     @Override

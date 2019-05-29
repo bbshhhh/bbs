@@ -3,6 +3,8 @@ package com.ccnu.bbs.service.Impl;
 import com.ccnu.bbs.VO.ArticleVO;
 import com.ccnu.bbs.entity.Article;
 import com.ccnu.bbs.forms.ArticleForm;
+import com.qiniu.common.QiniuException;
+import com.qiniu.http.Response;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +38,17 @@ public class ArticleServiceImplTest {
     public void searchArticle() {
         Page<ArticleVO> articles = articleService.searchArticle("创建帖子测试武侠", PageRequest.of(0, 10));
         assertNotEquals(0, articles.getTotalElements());
+    }
+
+    @Test
+    public void deleteImg() {
+        String imgUrl = "http://img.ccnunercel.cn/bbs/5a901650ffff43f4955122daa286704a";
+        try {
+            Response response = articleService.deleteImg(imgUrl);
+            assertEquals(true, response.isOK());
+        }catch (QiniuException e){
+            e.printStackTrace();
+        }
     }
 
     @Test

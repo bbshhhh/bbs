@@ -33,6 +33,16 @@ public class WeChatController {
     @Autowired
     private UserServiceImpl userService;
 
+    @GetMapping("/check")
+    public ResultVO WeChatCheckSession(@RequestParam String sessionId){
+        if (redisTemplate.hasKey("sessionId::" + sessionId)){
+            return ResultVOUtil.success(true);
+        }
+        else{
+            return ResultVOUtil.success(false);
+        }
+    }
+
     @GetMapping("/login")
     public ResultVO WeChatLogin(@RequestParam String code){
         String sessionId;

@@ -55,5 +55,12 @@ public class QiniuServiceImplTest {
 
     @Test
     public void deleteTest() {
+/*        String key = "bbs/f6704b58c9404c958627b7ff28441fde";
+        try {
+            Response response = qiniuService.delete(key);
+            Assert.assertEquals(true, response.isOK());
+        }catch (QiniuException e){
+            e.printStackTrace();
+        }*/
     }
 }
