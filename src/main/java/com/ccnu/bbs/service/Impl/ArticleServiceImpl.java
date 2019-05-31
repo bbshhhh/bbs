@@ -66,10 +66,10 @@ public class ArticleServiceImpl implements ArticleService {
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
-    private static final Double VIEW_NUM_WEIGHT = 100.0;
-    private static final Double COMMENT_NUM_WEIGHT = 200.0;
-    private static final Double LIKE_NUM_WEIGHT = 300.0;
-    private static final Double TIME_WEIGHT = - 1.0;
+    private static final Double VIEW_NUM_WEIGHT = 1.0;
+    private static final Double COMMENT_NUM_WEIGHT = 2.0;
+    private static final Double LIKE_NUM_WEIGHT = 3.0;
+//    private static final Double TIME_WEIGHT =  1.0;
 
     @Override
     /**
@@ -108,7 +108,7 @@ public class ArticleServiceImpl implements ArticleService {
         filterFunctionBuilders.add(new FunctionScoreQueryBuilder.FilterFunctionBuilder(QueryBuilders.matchQuery("articleKeywords", searchKey),
                 ScoreFunctionBuilders.weightFactorFunction(5)));
         filterFunctionBuilders.add(new FunctionScoreQueryBuilder.FilterFunctionBuilder(QueryBuilders.matchQuery("articleTitle", searchKey),
-                ScoreFunctionBuilders.weightFactorFunction(3)));
+                ScoreFunctionBuilders.weightFactorFunction(5)));
         filterFunctionBuilders.add(new FunctionScoreQueryBuilder.FilterFunctionBuilder(QueryBuilders.matchQuery("articleContent", searchKey),
                 ScoreFunctionBuilders.weightFactorFunction(2)));
         FunctionScoreQueryBuilder.FilterFunctionBuilder[] builders = new FunctionScoreQueryBuilder.FilterFunctionBuilder[filterFunctionBuilders.size()];
@@ -125,7 +125,7 @@ public class ArticleServiceImpl implements ArticleService {
         SearchQuery searchQuery = new NativeSearchQueryBuilder().
                 withQuery(qb).
                 withPageable(pageable).build();
-//        log.info("\n searchAritcle(): searchContent [" + searchKey + "] \n DSL  = \n " + searchQuery.getQuery().toString());
+//        log.info("\n searchArticle(): searchContent [" + searchKey + "] \n DSL  = \n " + searchQuery.getQuery().toString());
         // 搜索，获取结果
         Page<Article> articles = articleSearchRepository.search(searchQuery);
         // 2.对每一篇帖子进行拼装
@@ -295,11 +295,17 @@ public class ArticleServiceImpl implements ArticleService {
      * @return
      */
     private Article calcHotNum(Article article){
-        Double hotNum = LIKE_NUM_WEIGHT * article.getArticleLikeNum()
-                + VIEW_NUM_WEIGHT * article.getArticleViewNum()
-                + COMMENT_NUM_WEIGHT * article.getArticleCommentNum() / 6000;
+        Double hotNum;
         if (article.getArticleCreateTime() != null){
-            hotNum += TIME_WEIGHT * (System.currentTimeMillis() - article.getArticleCreateTime().getTime()) / 6000;
+            Long deltaTime = (System.currentTimeMillis() - article.getArticleCreateTime().getTime()) / 6000;
+            hotNum = LIKE_NUM_WEIGHT * article.getArticleLikeNum()
+                    + VIEW_NUM_WEIGHT * article.getArticleViewNum()
+                    + COMMENT_NUM_WEIGHT * article.getArticleCommentNum() / Math.log(deltaTime);
+        }
+        else {
+            hotNum = LIKE_NUM_WEIGHT * article.getArticleLikeNum()
+                    + VIEW_NUM_WEIGHT * article.getArticleViewNum()
+                    + COMMENT_NUM_WEIGHT * article.getArticleCommentNum();
         }
         article.setArticleHotNum(hotNum);
         return article;
