@@ -79,19 +79,21 @@ public class ReplyServiceImpl implements ReplyService {
         reply.setReplyCommentId(commentId);
         // 3.设置回复者
         reply.setReplyUserId(userId);
-        // 4.创建新消息，以通知被回复者
-        Message message = new Message();
-        // 找到被评论者所在帖子,将帖子id存入
+        // 4.如果回复的不是自己，创建新消息，以通知被回复者
         Comment comment = commentService.getComment(commentId);
-        message.setArticleId(comment.getCommentArticleId());
-        // 存入其他信息
-        message.setCommentId(comment.getCommentId());
-        message.setMessageType(MessageEnum.REPLY_MESSAGE.getCode());
-        message.setReceiverUserId(comment.getCommentUserId());
-        message.setSenderUserId(userId);
-        message.setRepliedContent(comment.getCommentContent());
-        message.setMessageContent(reply.getReplyContent());
-        messageService.createMessage(message);
+        if (!userId.equals(comment.getCommentUserId())){
+            Message message = new Message();
+            // 找到被评论者所在帖子,将帖子id存入
+            message.setArticleId(comment.getCommentArticleId());
+            // 存入其他信息
+            message.setCommentId(comment.getCommentId());
+            message.setMessageType(MessageEnum.REPLY_MESSAGE.getCode());
+            message.setReceiverUserId(comment.getCommentUserId());
+            message.setSenderUserId(userId);
+            message.setRepliedContent(comment.getCommentContent());
+            message.setMessageContent(reply.getReplyContent());
+            messageService.createMessage(message);
+        }
         // 保存回复
         return replyRepository.save(reply);
     }

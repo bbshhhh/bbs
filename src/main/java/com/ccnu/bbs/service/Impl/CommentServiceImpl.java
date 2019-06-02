@@ -101,16 +101,18 @@ public class CommentServiceImpl implements CommentService {
         }
         updateCommentDatabase();
         articleService.updateArticleDatabase();
-        // 6.创建评论消息，以通知被评论者
-        Message message = new Message();
-        message.setArticleId(article.getArticleId());
-        message.setCommentId(comment.getCommentId());
-        message.setMessageType(MessageEnum.REPLY_MESSAGE.getCode());
-        message.setReceiverUserId(article.getArticleUserId());
-        message.setSenderUserId(userId);
-        message.setRepliedContent(article.getArticleContent());
-        message.setMessageContent(comment.getCommentContent());
-        messageService.createMessage(message);
+        // 6.如果不是自己的帖子，则创建评论消息，以通知被评论者
+        if (!userId.equals(article.getArticleUserId())){
+            Message message = new Message();
+            message.setArticleId(article.getArticleId());
+            message.setCommentId(comment.getCommentId());
+            message.setMessageType(MessageEnum.REPLY_MESSAGE.getCode());
+            message.setReceiverUserId(article.getArticleUserId());
+            message.setSenderUserId(userId);
+            message.setRepliedContent(article.getArticleContent());
+            message.setMessageContent(comment.getCommentContent());
+            messageService.createMessage(message);
+        }
         return comment;
     }
 

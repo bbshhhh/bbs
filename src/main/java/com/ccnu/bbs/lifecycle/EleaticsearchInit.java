@@ -27,11 +27,11 @@ public class EleaticsearchInit implements ApplicationRunner {
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Override
-    public void run(ApplicationArguments args) throws Exception {
+    public void run(ApplicationArguments args) {
         log.info("正在更新Elasticsearch数据-------- {}", sdf.format(new Date()));
         List<Article> articles = articleRepository.findAll();
         if (articles != null && !articles.isEmpty()){
-            articleSearchRepository.saveAll(articles).forEach(System.out::println);
+            articleSearchRepository.saveAll(articles);
         }
         log.info("更新Elasticsearch数据完成-------- {}", sdf.format(new Date()));
     }

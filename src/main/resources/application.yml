@@ -15,7 +15,7 @@ spring:
         hbm2ddl:
           auto: update
         dialect: org.hibernate.dialect.MySQL5InnoDBDialect
-    show-sql: true
+    show-sql: false
   data:
     elasticsearch:
       cluster-name: elasticsearch

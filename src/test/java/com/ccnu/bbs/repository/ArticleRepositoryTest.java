@@ -22,7 +22,7 @@ public class ArticleRepositoryTest {
 
     @Test
     public void findAllByZoneTest(){
-        articleRepository.findAllByTopic(0, PageRequest.of(0, 2)).forEach(System.out::println);
+        articleRepository.findAllByTopicHot(0, PageRequest.of(0, 2)).forEach(System.out::println);
     }
 
     @Test

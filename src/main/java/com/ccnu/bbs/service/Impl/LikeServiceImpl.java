@@ -92,8 +92,9 @@ public class LikeServiceImpl implements LikeService {
             likeArticle = new LikeArticle();
             likeArticle.setLikeArticleId(articleId);
             likeArticle.setLikeUserId(userId);
-            // 如果是新建的点赞信息，并且点赞的状态是已点赞，则创建新的点赞通知消息
-            if (likeArticleForm.getIsLike() == LikeEnum.LIKE.getCode()){
+            // 如果是新建的点赞信息，并且点赞的状态是已点赞，而且点赞的不是自己的帖子，则创建新的点赞通知消息
+            if (likeArticleForm.getIsLike() == LikeEnum.LIKE.getCode()
+                    && !userId.equals(article.getArticleUserId())){
                 Message message = new Message();
                 message.setArticleId(articleId);
                 message.setMessageType(MessageEnum.LIKE_MESSAGE.getCode());
@@ -148,8 +149,9 @@ public class LikeServiceImpl implements LikeService {
             likeComment = new LikeComment();
             likeComment.setLikeCommentId(commentId);
             likeComment.setLikeUserId(userId);
-            // 如果是新建的点赞信息，并且点赞的状态是已点赞，则创建新的点赞通知消息
-            if (likeCommentForm.getIsLike() == LikeEnum.LIKE.getCode()){
+            // 如果是新建的点赞信息，并且点赞的状态是已点赞，而且点赞的不是自己的评论，则创建新的点赞通知消息
+            if (likeCommentForm.getIsLike() == LikeEnum.LIKE.getCode()
+                    && !userId.equals(comment.getCommentUserId())){
                 Message message = new Message();
                 message.setArticleId(comment.getCommentArticleId());
                 message.setMessageType(MessageEnum.LIKE_MESSAGE.getCode());

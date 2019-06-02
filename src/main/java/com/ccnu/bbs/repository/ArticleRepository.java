@@ -14,9 +14,12 @@ public interface ArticleRepository extends JpaRepository<Article, String> {
     @Query("select a from Article a where a.articleIsDelete = 0 order by a.articleHotNum desc")
     Page<Article> findAll(Pageable pageable);
 
-    // 分版块查看帖子
+    // 分版块查看帖子按热度排序
     @Query("select a from Article a where a.articleIsDelete = 0 and a.articleTopicType = ?1 order by a.articleHotNum desc")
-    Page<Article> findAllByTopic(Integer zoneId, Pageable pageable);
+    Page<Article> findAllByTopicHot(Integer zoneId, Pageable pageable);
+
+    @Query("select a from Article a where a.articleIsDelete = 0 and a.articleTopicType = ?1 order by a.articleCreateTime desc")
+    Page<Article> findAllByTopicTime(Integer zoneId, Pageable pageable);
 
     // 查看用户所发帖子
     @Query("select a from Article a where a.articleUserId = ?1 and a.articleIsDelete = 0 " +

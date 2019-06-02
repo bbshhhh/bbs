@@ -32,13 +32,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import static java.lang.Math.E;
 
 
 @Service
@@ -66,10 +67,10 @@ public class ArticleServiceImpl implements ArticleService {
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
-    private static final Double VIEW_NUM_WEIGHT = 1.0;
-    private static final Double COMMENT_NUM_WEIGHT = 2.0;
-    private static final Double LIKE_NUM_WEIGHT = 3.0;
-//    private static final Double TIME_WEIGHT =  1.0;
+    private static final Double VIEW_NUM_WEIGHT = 100.0;
+    private static final Double COMMENT_NUM_WEIGHT = 200.0;
+    private static final Double LIKE_NUM_WEIGHT = 300.0;
+    private static final Double INIT_VALUE =  100.0;
 
     @Override
     /**
@@ -89,8 +90,15 @@ public class ArticleServiceImpl implements ArticleService {
      * 版块帖子列表
      */
     public Page<ArticleVO> topicArticle(Integer topicType, Pageable pageable){
-        // 1.查找出特定版块帖子列表并按热度排序
-        Page<Article> articles = articleRepository.findAllByTopic(topicType, pageable);
+        // 1.查找出特定版块帖子列表
+        Page<Article> articles;
+        // 如果是失物招领的版块则按创建时间倒序排序
+        if (topicType == 3){
+            articles = articleRepository.findAllByTopicTime(topicType, pageable);
+        }
+        else {
+            articles = articleRepository.findAllByTopicHot(topicType, pageable);
+        }
         // 2.对每一篇帖子进行拼装
         List<ArticleVO> articleVOList = articles.stream().
                 map(e -> article2articleVO(e, null)).collect(Collectors.toList());
@@ -282,8 +290,9 @@ public class ArticleServiceImpl implements ArticleService {
             // 3.更新帖子热度
             article = calcHotNum(article);
             // 4.保存帖子进数据库及es，并删除redis里的数据
-            articleRepository.save(article);
+            article = articleRepository.save(article);
             articleSearchRepository.save(article);
+            redisTemplate.opsForValue().set(articleKey, article);
 //            redisTemplate.delete(articleKey);
         }
         return;
@@ -297,15 +306,15 @@ public class ArticleServiceImpl implements ArticleService {
     private Article calcHotNum(Article article){
         Double hotNum;
         if (article.getArticleCreateTime() != null){
-            Long deltaTime = (System.currentTimeMillis() - article.getArticleCreateTime().getTime()) / 6000;
-            hotNum = LIKE_NUM_WEIGHT * article.getArticleLikeNum()
+            Double deltaTime = (System.currentTimeMillis() - article.getArticleCreateTime().getTime()) / 86400000.0;
+            hotNum = (INIT_VALUE + LIKE_NUM_WEIGHT * article.getArticleLikeNum()
                     + VIEW_NUM_WEIGHT * article.getArticleViewNum()
-                    + COMMENT_NUM_WEIGHT * article.getArticleCommentNum() / Math.log(deltaTime);
+                    + COMMENT_NUM_WEIGHT * article.getArticleCommentNum()) / Math.pow(E, deltaTime);
         }
         else {
-            hotNum = LIKE_NUM_WEIGHT * article.getArticleLikeNum()
+            hotNum = (INIT_VALUE + LIKE_NUM_WEIGHT * article.getArticleLikeNum()
                     + VIEW_NUM_WEIGHT * article.getArticleViewNum()
-                    + COMMENT_NUM_WEIGHT * article.getArticleCommentNum();
+                    + COMMENT_NUM_WEIGHT * article.getArticleCommentNum()) / Math.pow(E, 0);
         }
         article.setArticleHotNum(hotNum);
         return article;
