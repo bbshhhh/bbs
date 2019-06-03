@@ -188,7 +188,7 @@ public class ArticleServiceImpl implements ArticleService {
             return imgUrl;
         }
         // 3.使用KeyUtil生成唯一主键作为key进行上传，返回图片url
-        imgUrl = qiniuService.uploadFile(file, "bbs/" + KeyUtil.genUniqueKey());
+        imgUrl = qiniuService.uploadFile(file, "bbs/" + KeyUtil.genUniqueKey() + "-web");
         return imgUrl;
     }
 
@@ -197,7 +197,7 @@ public class ArticleServiceImpl implements ArticleService {
      * 删除图片
      */
     public Response deleteImg(String imgUrl) throws QiniuException {
-        String key = imgUrl.substring(25);
+        String key = imgUrl.substring(25, imgUrl.length() - 4);
         return qiniuService.delete(key);
     }
 

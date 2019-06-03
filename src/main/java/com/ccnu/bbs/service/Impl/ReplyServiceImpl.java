@@ -72,6 +72,7 @@ public class ReplyServiceImpl implements ReplyService {
     public Reply createReply(ReplyForm replyForm, String userId) throws BBSException {
         Reply reply = new Reply();
         String commentId = replyForm.getCommentId();
+        String replyId = replyForm.getReplyId();
         BeanUtils.copyProperties(replyForm, reply);
         // 1.设置主键
         reply.setReplyId(KeyUtil.genUniqueKey());
@@ -79,20 +80,44 @@ public class ReplyServiceImpl implements ReplyService {
         reply.setReplyCommentId(commentId);
         // 3.设置回复者
         reply.setReplyUserId(userId);
-        // 4.如果回复的不是自己，创建新消息，以通知被回复者
+        // 4.获取评论
         Comment comment = commentService.getComment(commentId);
-        if (!userId.equals(comment.getCommentUserId())){
-            Message message = new Message();
-            // 找到被评论者所在帖子,将帖子id存入
-            message.setArticleId(comment.getCommentArticleId());
-            // 存入其他信息
-            message.setCommentId(comment.getCommentId());
-            message.setMessageType(MessageEnum.REPLY_MESSAGE.getCode());
-            message.setReceiverUserId(comment.getCommentUserId());
-            message.setSenderUserId(userId);
-            message.setRepliedContent(comment.getCommentContent());
-            message.setMessageContent(reply.getReplyContent());
-            messageService.createMessage(message);
+        // 5.发送消息
+        // 如果有replyId，说明回复的是楼中楼的回复
+        if (replyId != null){
+            // 所以找到该回复
+            Reply beReplied = replyRepository.findReply(replyId);
+            // 如果数据库中有该reply并且reply的用户不是本人，就创建新消息
+            if (beReplied != null && !userId.equals(beReplied.getReplyUserId())){
+                Message message = new Message();
+                // 找到被回复者所在帖子,将帖子id存入
+                message.setArticleId(comment.getCommentArticleId());
+                // 存入其他信息
+                message.setCommentId(comment.getCommentId());
+                message.setMessageType(MessageEnum.REPLY_MESSAGE.getCode());
+                message.setReceiverUserId(beReplied.getReplyUserId());
+                message.setSenderUserId(userId);
+                message.setRepliedContent(beReplied.getReplyContent());
+                message.setMessageContent(reply.getReplyContent());
+                messageService.createMessage(message);
+            }
+        }
+        // 如果没有replyId，说明回复的是层主
+        else {
+            // 如果被回复的层主不是本人，则创建新消息
+            if (!userId.equals(comment.getCommentUserId())){
+                Message message = new Message();
+                // 找到被评论者所在帖子,将帖子id存入
+                message.setArticleId(comment.getCommentArticleId());
+                // 存入其他信息
+                message.setCommentId(comment.getCommentId());
+                message.setMessageType(MessageEnum.REPLY_MESSAGE.getCode());
+                message.setReceiverUserId(comment.getCommentUserId());
+                message.setSenderUserId(userId);
+                message.setRepliedContent(comment.getCommentContent());
+                message.setMessageContent(reply.getReplyContent());
+                messageService.createMessage(message);
+            }
         }
         // 保存回复
         return replyRepository.save(reply);
