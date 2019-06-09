@@ -31,7 +31,7 @@ public class BBSTask extends QuartzJobBean {
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Override
-    protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+    protected void executeInternal(JobExecutionContext jobExecutionContext) {
 
         log.info("BBSTask-------- {}", sdf.format(new Date()));
         articleService.updateArticleDatabase();
