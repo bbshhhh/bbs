@@ -245,7 +245,7 @@ public class ArticleController {
                             BindingResult bindingResult){
         // 1.查看表单参数是否有问题
         if (bindingResult.hasErrors()){
-            log.error("【帖子收藏】参数不正确, likeArticleForm={}", collectForm);
+            log.error("【帖子收藏】参数不正确, collectForm={}", collectForm);
             throw new BBSException(ResultEnum.PARAM_ERROR.getCode(),
                     bindingResult.getFieldError().getDefaultMessage());
         }

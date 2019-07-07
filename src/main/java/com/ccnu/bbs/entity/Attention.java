@@ -19,4 +19,6 @@ public class Attention {
     private String attentionUserId;
     /** 关注人id. */
     private String attentionFollowerId;
+    /** 是否关注. */
+    private Integer isAttention;
 }

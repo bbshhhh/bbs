@@ -1,9 +1,6 @@
 package com.ccnu.bbs.task;
 
-import com.ccnu.bbs.service.Impl.ArticleServiceImpl;
-import com.ccnu.bbs.service.Impl.CollectServiceImpl;
-import com.ccnu.bbs.service.Impl.CommentServiceImpl;
-import com.ccnu.bbs.service.Impl.LikeServiceImpl;
+import com.ccnu.bbs.service.Impl.*;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -28,6 +25,9 @@ public class BBSTask extends QuartzJobBean {
     @Autowired
     private CollectServiceImpl collectService;
 
+    @Autowired
+    private AttentionServiceImpl attentionService;
+
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Override
@@ -39,5 +39,6 @@ public class BBSTask extends QuartzJobBean {
         likeService.updateLikeArticleDatabase();
         likeService.updateLikeCommentDatabase();
         collectService.updateCollectDatabase();
+        attentionService.updateAttentionDatabase();
     }
 }

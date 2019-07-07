@@ -173,6 +173,10 @@ public class ArticleServiceImpl implements ArticleService {
         article = articleSearchRepository.save(article);
         // 8.创建帖子需要从redis同步一遍帖子数据，以便排序
         updateArticleDatabase();
+        // 9.将用户发帖数+1
+        User user = userService.findUser(userId);
+        user.setUserArticleNum(user.getUserAttentionNum() + 1);
+        userService.saveUser(user);
         return article;
     }
 

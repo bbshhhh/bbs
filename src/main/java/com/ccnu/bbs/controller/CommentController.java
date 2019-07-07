@@ -85,7 +85,7 @@ public class CommentController {
                            BindingResult bindingResult){
         // 1.查看表单参数是否有问题
         if (bindingResult.hasErrors()){
-            log.error("【发表评论】参数不正确, articleForm={}", commentForm);
+            log.error("【发表评论】参数不正确, commentForm={}", commentForm);
             throw new BBSException(ResultEnum.PARAM_ERROR.getCode(),
                     bindingResult.getFieldError().getDefaultMessage());
         }
