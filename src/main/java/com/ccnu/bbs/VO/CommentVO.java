@@ -10,6 +10,8 @@ public class CommentVO {
 
     /** 评论id. */
     private String commentId;
+    /** 用户id. */
+    private String userId;
     /** 用户昵称. */
     private String userName;
     /** 用户头像. */

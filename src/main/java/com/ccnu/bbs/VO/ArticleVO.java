@@ -12,6 +12,8 @@ public class ArticleVO {
     private String articleId;
     /** 帖子所属版块. */
     private Integer articleTopicType;
+    /** 用户id. */
+    private String userId;
     /** 用户昵称. */
     private String userName;
     /** 用户头像. */

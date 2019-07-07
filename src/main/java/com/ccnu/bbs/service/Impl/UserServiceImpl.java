@@ -4,12 +4,14 @@ import cn.binarywang.wx.miniapp.bean.WxMaUserInfo;
 import com.ccnu.bbs.VO.UserBasicInfoVO;
 import com.ccnu.bbs.VO.UserInfoVO;
 import com.ccnu.bbs.converter.User2UserBasicInfoVO;
+import com.ccnu.bbs.entity.Department;
 import com.ccnu.bbs.entity.User;
 import com.ccnu.bbs.enums.ResultEnum;
 import com.ccnu.bbs.enums.RoleEnum;
 import com.ccnu.bbs.exception.BBSException;
 import com.ccnu.bbs.forms.UserInfoForm;
 import com.ccnu.bbs.forms.UserModifyForm;
+import com.ccnu.bbs.repository.DepartmentRepository;
 import com.ccnu.bbs.repository.UserRepository;
 import com.ccnu.bbs.service.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +34,10 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
 
     @Autowired
-    UserRepository userRepository;
+    private UserRepository userRepository;
+
+    @Autowired
+    private DepartmentRepository departmentRepository;
 
 
     @Autowired
@@ -102,10 +107,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    /**
+     * 获取用户详细信息
+     */
     public UserInfoVO getUserInfo(String userId){
         User user = findUser(userId);
         UserInfoVO userInfoVO = new UserInfoVO();
+        Department department = departmentRepository.findUserDepartment(user.getUserDepartment());
         BeanUtils.copyProperties(user, userInfoVO);
+        userInfoVO.setUserDepartment(department.getDepartmentName());
         return userInfoVO;
     }
 

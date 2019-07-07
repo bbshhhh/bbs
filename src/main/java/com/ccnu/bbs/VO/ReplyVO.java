@@ -9,6 +9,8 @@ public class ReplyVO {
 
     /** 回复id. */
     private String replyId;
+    /** 用户id. */
+    private String usereId;
     /** 用户昵称. */
     private String userName;
     /** 用户头像. */

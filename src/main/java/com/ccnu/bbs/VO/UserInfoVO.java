@@ -8,7 +8,7 @@ public class UserInfoVO extends UserBasicInfoVO{
     /** 用户性别. */
     private Integer userGender;
     /** 用户所在学院. */
-    private Integer userDepartment;
+    private String userDepartment;
     /** 用户粉丝数. */
     private Integer userFansNum = 0;
     /** 用户关注数. */
