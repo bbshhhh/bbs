@@ -61,6 +61,8 @@ public class RedisConfig {
         // 2.设置value的序列化规则和 key的序列化规则
         redisTemplate.setValueSerializer(valueSerializer());
         redisTemplate.setKeySerializer(keySerializer());
+        redisTemplate.setHashKeySerializer(keySerializer());
+        redisTemplate.setHashValueSerializer(keySerializer());
         redisTemplate.afterPropertiesSet();
         log.info("自定义RedisTemplate加载完成");
         return redisTemplate;

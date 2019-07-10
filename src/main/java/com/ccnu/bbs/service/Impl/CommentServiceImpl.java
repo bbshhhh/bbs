@@ -11,6 +11,7 @@ import com.ccnu.bbs.exception.BBSException;
 import com.ccnu.bbs.forms.CommentForm;
 import com.ccnu.bbs.repository.CommentRepository;
 import com.ccnu.bbs.service.CommentService;
+import com.ccnu.bbs.utils.EntityUtils;
 import com.ccnu.bbs.utils.KeyUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,8 +97,9 @@ public class CommentServiceImpl implements CommentService {
         Article article = articleService.getArticle(comment.getCommentArticleId());
         // 5.将帖子评论数+1，存入redis中
         if (article != null){
-            article.setArticleCommentNum(article.getArticleCommentNum() + 1);
-            redisTemplate.opsForValue().set("Article::" + comment.getCommentArticleId(), article, 1, TimeUnit.HOURS);
+            redisTemplate.opsForHash().increment("Article::" + article.getArticleId(), "articleCommentNum", 1);
+//            article.setArticleCommentNum(article.getArticleCommentNum() + 1);
+//            redisTemplate.opsForValue().set("Article::" + comment.getCommentArticleId(), article, 1, TimeUnit.HOURS);
         }
         updateCommentDatabase();
         articleService.updateArticleDatabase();
@@ -133,14 +135,15 @@ public class CommentServiceImpl implements CommentService {
     public Comment getComment(String commentId) throws BBSException {
         Comment comment;
         if (redisTemplate.hasKey("Comment::" + commentId)){
-            comment = (Comment) redisTemplate.opsForValue().get("Comment::" + commentId);
+            comment = EntityUtils.hashToObject(redisTemplate.opsForHash().entries("Comment::" + commentId), Comment.class);
         }
         else {
             comment = commentRepository.findComment(commentId);
             if (comment == null){
                 throw new BBSException(ResultEnum.COMMENT_NOT_EXIT);
             }
-            redisTemplate.opsForValue().set("Comment::" + commentId, comment, 1, TimeUnit.HOURS);
+            redisTemplate.opsForHash().putAll("Comment::" + commentId, EntityUtils.objectToHash(comment));
+            redisTemplate.expire("Comment::" + commentId, 1L, TimeUnit.HOURS);
         }
         return comment;
     }
@@ -155,7 +158,7 @@ public class CommentServiceImpl implements CommentService {
         Set<String> commentKeys = redisTemplate.keys("Comment::*");
         for (String commentKey : commentKeys){
             // 2.根据每一个key得到评论
-            Comment comment = (Comment) redisTemplate.opsForValue().get(commentKey);
+            Comment comment = EntityUtils.hashToObject(redisTemplate.opsForHash().entries(commentKey), Comment.class);
             // 4.保存帖子进数据库，并删除redis里的数据
             commentRepository.save(comment);
 //            redisTemplate.delete(commentKey);
@@ -183,7 +186,7 @@ public class CommentServiceImpl implements CommentService {
         // 查找作者身份
         commentVO.setUserRole(user.getUserRoleType());
         // 查看是否是当前用户所发评论
-        commentVO.setIsOneself(userId.equals(user.getUserId()) ? true : false);
+        commentVO.setIsOneself(userId.equals(user.getUserId()));
         // 查找回复信息
         List<ReplyVO> replies = replyService.commentReply(userId, comment.getCommentId(), PageRequest.of(0, 3)).getContent();
         commentVO.setReplies(replies);

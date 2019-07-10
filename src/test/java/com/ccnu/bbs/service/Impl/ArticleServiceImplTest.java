@@ -3,6 +3,7 @@ package com.ccnu.bbs.service.Impl;
 import com.ccnu.bbs.VO.ArticleVO;
 import com.ccnu.bbs.entity.Article;
 import com.ccnu.bbs.forms.ArticleForm;
+import com.ccnu.bbs.utils.EntityUtils;
 import com.qiniu.common.QiniuException;
 import com.qiniu.http.Response;
 import org.junit.Test;
@@ -14,7 +15,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -27,7 +30,7 @@ public class ArticleServiceImplTest {
 
     private final static String userId = "oRp4Z402QnQqQIdcR3C3Z3fyIQu4";
 
-    private final static String articleId = "dfdf2f73e1134912a642555c072cd3dc";
+    private final static String articleId = "fb94e0d7c0a241ceb6c84fa13920cd19";
 
     @Test
     public void allArticle() {

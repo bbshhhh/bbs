@@ -50,7 +50,7 @@ public class LikeServiceImpl implements LikeService {
         else {
             likeArticle = likeArticleRepository.findLikeArticle(articleId, userId);
         }
-        if (likeArticle != null && likeArticle.getIsLike() == LikeEnum.LIKE.getCode()) return true;
+        if (likeArticle != null && likeArticle.getIsLike().equals(LikeEnum.LIKE.getCode())) return true;
         else return false;
     }
 
@@ -66,7 +66,7 @@ public class LikeServiceImpl implements LikeService {
         else {
             likeComment = likeCommentRepository.findLikeComment(commentId, userId);
         }
-        if (likeComment != null && likeComment.getIsLike() == LikeEnum.LIKE.getCode()) return true;
+        if (likeComment != null && likeComment.getIsLike().equals(LikeEnum.LIKE.getCode())) return true;
         else return false;
     }
 
@@ -109,21 +109,19 @@ public class LikeServiceImpl implements LikeService {
         // 如果点赞信息为空或者为未点赞且要更新的点赞信息为已点赞，则帖子点赞数+1
         if (likeArticle.getIsLike() == null || likeArticle.getIsLike() == LikeEnum.NOT_LIKE.getCode()){
             if (likeArticleForm.getIsLike() == LikeEnum.LIKE.getCode()){
-                article.setArticleLikeNum(article.getArticleLikeNum() + 1);
+                redisTemplate.opsForHash().increment("Article::" + articleId, "articleLikeNum", 1);
             }
         }
         // 如果点赞信息为已点赞且要更新的点赞信息为未点赞，则帖子点赞数-1
         else {
             if (likeArticleForm.getIsLike() == LikeEnum.NOT_LIKE.getCode()){
-                article.setArticleLikeNum(article.getArticleLikeNum() - 1);
+                redisTemplate.opsForHash().increment("Article::" + articleId, "articleLikeNum", -1);
             }
         }
-        // 将帖子存入redis
-        redisTemplate.opsForValue().set("Article::" + articleId, article, 1, TimeUnit.HOURS);
         // 5.设置点赞状态
         likeArticle.setIsLike(likeArticleForm.getIsLike());
         // 6.将点赞信息存入redis
-        redisTemplate.opsForValue().set("LikeArticle::" + articleId + '-' + userId, likeArticle, 1, TimeUnit.HOURS);
+//        redisTemplate.opsForValue().set("LikeArticle::" + articleId + '-' + userId, likeArticle, 1, TimeUnit.HOURS);
         return likeArticle;
     }
 
@@ -166,21 +164,19 @@ public class LikeServiceImpl implements LikeService {
         // 如果点赞信息为空或者为未点赞且要更新的点赞信息为已点赞，则评论点赞数+1
         if (likeComment.getIsLike() == null || likeComment.getIsLike() == LikeEnum.NOT_LIKE.getCode()){
             if (likeCommentForm.getIsLike() == LikeEnum.LIKE.getCode()){
-                comment.setCommentLikeNum(comment.getCommentLikeNum() + 1);
+                redisTemplate.opsForHash().increment("Comment" + commentId, "commentLikeNum", 1);
             }
         }
         // 如果点赞信息为已点赞且要更新的点赞信息为未点赞，则帖子点赞数-1
         else {
             if (likeCommentForm.getIsLike() == LikeEnum.NOT_LIKE.getCode()){
-                comment.setCommentLikeNum(comment.getCommentLikeNum() - 1);
+                redisTemplate.opsForHash().increment("Comment" + commentId, "commentLikeNum", -1);
             }
         }
-        // 将评论存入redis
-        redisTemplate.opsForValue().set("Comment::" + commentId, comment, 1, TimeUnit.HOURS);
         // 6.设置点赞状态
         likeComment.setIsLike(likeCommentForm.getIsLike());
         // 7.将点赞信息存入redis
-        redisTemplate.opsForValue().set("LikeComment::" + commentId + '-' + userId, likeComment, 1, TimeUnit.HOURS);
+//        redisTemplate.opsForValue().set("LikeComment::" + commentId + '-' + userId, likeComment, 1, TimeUnit.HOURS);
         return likeComment;
     }
 

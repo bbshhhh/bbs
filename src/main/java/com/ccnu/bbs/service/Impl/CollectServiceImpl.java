@@ -34,7 +34,7 @@ public class CollectServiceImpl implements CollectService {
         else {
             collect = collectRepository.findCollect(articleId, userId);
         }
-        if (collect != null && collect.getIsCollect() == CollectEnum.COLLECT.getCode()) return true;
+        if (collect != null && collect.getIsCollect().equals(CollectEnum.COLLECT.getCode())) return true;
         else return false;
     }
 

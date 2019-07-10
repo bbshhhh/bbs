@@ -11,6 +11,7 @@ import com.ccnu.bbs.forms.ArticleForm;
 import com.ccnu.bbs.repository.*;
 import com.ccnu.bbs.searchRepository.ArticleSearchRepository;
 import com.ccnu.bbs.service.ArticleService;
+import com.ccnu.bbs.utils.EntityUtils;
 import com.ccnu.bbs.utils.KeyUtil;
 import com.qiniu.common.QiniuException;
 import com.qiniu.http.Response;
@@ -213,8 +214,10 @@ public class ArticleServiceImpl implements ArticleService {
         Article article = getArticle(articleId);
         ArticleVO articleVO;
         // 2.如果存在这篇帖子，将帖子浏览数+1，存入redis中
+        redisTemplate.opsForHash().increment("Article::" + articleId, "articleViewNum", 1);
         article.setArticleViewNum(article.getArticleViewNum() + 1);
-        redisTemplate.opsForValue().set("Article::" + articleId, article, 1, TimeUnit.HOURS);
+//        redisTemplate.opsForValue().set("Article::" + articleId, article, 1, TimeUnit.HOURS);
+
         articleVO = article2articleVO(article, userId);
         return articleVO;
     }
@@ -226,13 +229,15 @@ public class ArticleServiceImpl implements ArticleService {
     public Article getArticle(String articleId) throws BBSException{
         Article article;
         if (redisTemplate.hasKey("Article::" + articleId)){
-            article = (Article) redisTemplate.opsForValue().get("Article::" + articleId);
+            article = EntityUtils.hashToObject(redisTemplate.opsForHash().entries("Article::" + articleId), Article.class);
         }
         else {
             article = articleRepository.findArticle(articleId);
             if (article == null){
                 throw new BBSException(ResultEnum.ARTICLE_NOT_EXIT);
             }
+            redisTemplate.opsForHash().putAll("Article::" + articleId, EntityUtils.objectToHash(article));
+            redisTemplate.expire("Article::" + articleId, 1, TimeUnit.HOURS);
         }
         return article;
     }
@@ -290,13 +295,13 @@ public class ArticleServiceImpl implements ArticleService {
         Set<String> articleKeys = redisTemplate.keys("Article::*");
         for (String articleKey : articleKeys){
             // 2.根据每一个key得到帖子
-            Article article = (Article) redisTemplate.opsForValue().get(articleKey);
+            Article article = EntityUtils.hashToObject(redisTemplate.opsForHash().entries(articleKey), Article.class);
             // 3.更新帖子热度
             article = calcHotNum(article);
             // 4.保存帖子进数据库及es，并删除redis里的数据
             article = articleRepository.save(article);
             articleSearchRepository.save(article);
-            redisTemplate.opsForValue().set(articleKey, article);
+            redisTemplate.opsForHash().putAll(articleKey, EntityUtils.objectToHash(article));
 //            redisTemplate.delete(articleKey);
         }
         return;
@@ -358,7 +363,7 @@ public class ArticleServiceImpl implements ArticleService {
         // 查看帖子是否被当前用户收藏
         articleVO.setIsCollect(collectService.isArticleCollect(article.getArticleId(), userId));
         // 查看帖子是否被删除
-        articleVO.setIsDelete(article.getArticleIsDelete() == DeleteEnum.NOT_DELETE.getCode() ? false : true);
+        articleVO.setIsDelete(article.getArticleIsDelete().equals(DeleteEnum.DELETE.getCode()));
         return articleVO;
     }
 
