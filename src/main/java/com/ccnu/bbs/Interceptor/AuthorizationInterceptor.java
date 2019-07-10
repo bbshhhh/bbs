@@ -2,7 +2,6 @@ package com.ccnu.bbs.Interceptor;
 
 import cn.binarywang.wx.miniapp.bean.WxMaJscode2SessionResult;
 import com.ccnu.bbs.enums.ResultEnum;
-import com.ccnu.bbs.exception.BBSException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;

@@ -143,7 +143,7 @@ public class CommentServiceImpl implements CommentService {
                 throw new BBSException(ResultEnum.COMMENT_NOT_EXIT);
             }
             redisTemplate.opsForHash().putAll("Comment::" + commentId, EntityUtils.objectToHash(comment));
-            redisTemplate.expire("Comment::" + commentId, 1L, TimeUnit.HOURS);
+            redisTemplate.expire("Comment::" + commentId, 1, TimeUnit.HOURS);
         }
         return comment;
     }
@@ -179,7 +179,7 @@ public class CommentServiceImpl implements CommentService {
         BeanUtils.copyProperties(comment, commentVO);
         // 查找帖子信息,查看帖子是否被删除
         Article article = articleService.getArticle(comment.getCommentArticleId());
-        commentVO.setIsArticleDelete(article.getArticleIsDelete() == DeleteEnum.NOT_DELETE.getCode() ? false : true);
+        commentVO.setIsArticleDelete(article.getArticleIsDelete().equals(DeleteEnum.DELETE.getCode()));
         // 查找作者信息
         User user = userService.findUser(comment.getCommentUserId());
         BeanUtils.copyProperties(user, commentVO);

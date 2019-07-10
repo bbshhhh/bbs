@@ -34,7 +34,10 @@ public class CollectServiceImpl implements CollectService {
         else {
             collect = collectRepository.findCollect(articleId, userId);
         }
-        if (collect != null && collect.getIsCollect().equals(CollectEnum.COLLECT.getCode())) return true;
+        if (collect != null){
+            redisTemplate.opsForValue().set("Collect::" + articleId + '-' + userId, collect, 1, TimeUnit.HOURS);
+            return collect.getIsCollect().equals(CollectEnum.COLLECT.getCode());
+        }
         else return false;
     }
 
@@ -77,8 +80,8 @@ public class CollectServiceImpl implements CollectService {
         // 2.保存数据到数据库并清除redis中数据
         for (String collectKey : collectKeys){
             Collect collect = (Collect) redisTemplate.opsForValue().get(collectKey);
-            collect = collectRepository.save(collect);
-            redisTemplate.opsForValue().set(collectKey, collect);
+            collectRepository.save(collect);
+//            redisTemplate.opsForValue().set(collectKey, collect);
 //            redisTemplate.delete(collectKey);
         }
         return;

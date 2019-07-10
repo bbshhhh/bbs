@@ -298,10 +298,11 @@ public class ArticleServiceImpl implements ArticleService {
             Article article = EntityUtils.hashToObject(redisTemplate.opsForHash().entries(articleKey), Article.class);
             // 3.更新帖子热度
             article = calcHotNum(article);
-            // 4.保存帖子进数据库及es，并删除redis里的数据
+            // 4.保存帖子进数据库及es，再更新redis里的数据
             article = articleRepository.save(article);
             articleSearchRepository.save(article);
             redisTemplate.opsForHash().putAll(articleKey, EntityUtils.objectToHash(article));
+            redisTemplate.expire(articleKey, redisTemplate.getExpire(articleKey), TimeUnit.HOURS);
 //            redisTemplate.delete(articleKey);
         }
         return;
@@ -346,12 +347,12 @@ public class ArticleServiceImpl implements ArticleService {
         articleVO.setUserRole(user.getUserRoleType());
         // 查看是不是当前用户所发帖子
         if (userId != null){
-            articleVO.setIsOneself(userId.equals(user.getUserId()) ? true : false);
+            articleVO.setIsOneself(userId.equals(user.getUserId()));
         }
         // 设定时间
         articleVO.setArticleCreateTime(Date2StringConverter.convert(article.getArticleCreateTime()));
         // 获得图片url
-        if (article.getArticleImg()!=null){
+        if (article.getArticleImg() != null){
             articleVO.setArticleImages(Arrays.asList(article.getArticleImg().split(";")));
         }
         // 查找关键词信息

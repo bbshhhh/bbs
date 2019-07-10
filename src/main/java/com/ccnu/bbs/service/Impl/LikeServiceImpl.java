@@ -50,7 +50,10 @@ public class LikeServiceImpl implements LikeService {
         else {
             likeArticle = likeArticleRepository.findLikeArticle(articleId, userId);
         }
-        if (likeArticle != null && likeArticle.getIsLike().equals(LikeEnum.LIKE.getCode())) return true;
+        if (likeArticle != null){
+            redisTemplate.opsForValue().set("LikeArticle::" + articleId + '-' + userId, likeArticle, 1, TimeUnit.HOURS);
+            return likeArticle.getIsLike().equals(LikeEnum.LIKE.getCode());
+        }
         else return false;
     }
 
@@ -66,7 +69,10 @@ public class LikeServiceImpl implements LikeService {
         else {
             likeComment = likeCommentRepository.findLikeComment(commentId, userId);
         }
-        if (likeComment != null && likeComment.getIsLike().equals(LikeEnum.LIKE.getCode())) return true;
+        if (likeComment != null){
+            redisTemplate.opsForValue().set("LikeComment::" + commentId + '-' + userId, likeComment, 1, TimeUnit.HOURS);
+            return likeComment.getIsLike().equals(LikeEnum.LIKE.getCode());
+        }
         else return false;
     }
 
@@ -93,7 +99,7 @@ public class LikeServiceImpl implements LikeService {
             likeArticle.setLikeArticleId(articleId);
             likeArticle.setLikeUserId(userId);
             // 如果是新建的点赞信息，并且点赞的状态是已点赞，而且点赞的不是自己的帖子，则创建新的点赞通知消息
-            if (likeArticleForm.getIsLike() == LikeEnum.LIKE.getCode()
+            if (likeArticleForm.getIsLike().equals(LikeEnum.LIKE.getCode())
                     && !userId.equals(article.getArticleUserId())){
                 Message message = new Message();
                 message.setArticleId(articleId);
@@ -107,21 +113,21 @@ public class LikeServiceImpl implements LikeService {
         }
         // 5.更新被点赞帖子的点赞数
         // 如果点赞信息为空或者为未点赞且要更新的点赞信息为已点赞，则帖子点赞数+1
-        if (likeArticle.getIsLike() == null || likeArticle.getIsLike() == LikeEnum.NOT_LIKE.getCode()){
+        if (likeArticle.getIsLike() == null || likeArticle.getIsLike().equals(LikeEnum.NOT_LIKE.getCode())){
             if (likeArticleForm.getIsLike() == LikeEnum.LIKE.getCode()){
                 redisTemplate.opsForHash().increment("Article::" + articleId, "articleLikeNum", 1);
             }
         }
         // 如果点赞信息为已点赞且要更新的点赞信息为未点赞，则帖子点赞数-1
         else {
-            if (likeArticleForm.getIsLike() == LikeEnum.NOT_LIKE.getCode()){
+            if (likeArticleForm.getIsLike().equals(LikeEnum.NOT_LIKE.getCode())){
                 redisTemplate.opsForHash().increment("Article::" + articleId, "articleLikeNum", -1);
             }
         }
         // 5.设置点赞状态
         likeArticle.setIsLike(likeArticleForm.getIsLike());
         // 6.将点赞信息存入redis
-//        redisTemplate.opsForValue().set("LikeArticle::" + articleId + '-' + userId, likeArticle, 1, TimeUnit.HOURS);
+        redisTemplate.opsForValue().set("LikeArticle::" + articleId + '-' + userId, likeArticle, 1, TimeUnit.HOURS);
         return likeArticle;
     }
 
@@ -148,7 +154,7 @@ public class LikeServiceImpl implements LikeService {
             likeComment.setLikeCommentId(commentId);
             likeComment.setLikeUserId(userId);
             // 如果是新建的点赞信息，并且点赞的状态是已点赞，而且点赞的不是自己的评论，则创建新的点赞通知消息
-            if (likeCommentForm.getIsLike() == LikeEnum.LIKE.getCode()
+            if (likeCommentForm.getIsLike().equals(LikeEnum.LIKE.getCode())
                     && !userId.equals(comment.getCommentUserId())){
                 Message message = new Message();
                 message.setArticleId(comment.getCommentArticleId());
@@ -162,21 +168,21 @@ public class LikeServiceImpl implements LikeService {
         }
         // 5.更新被点赞评论的点赞数
         // 如果点赞信息为空或者为未点赞且要更新的点赞信息为已点赞，则评论点赞数+1
-        if (likeComment.getIsLike() == null || likeComment.getIsLike() == LikeEnum.NOT_LIKE.getCode()){
+        if (likeComment.getIsLike() == null || likeComment.getIsLike().equals(LikeEnum.NOT_LIKE.getCode())){
             if (likeCommentForm.getIsLike() == LikeEnum.LIKE.getCode()){
                 redisTemplate.opsForHash().increment("Comment" + commentId, "commentLikeNum", 1);
             }
         }
         // 如果点赞信息为已点赞且要更新的点赞信息为未点赞，则帖子点赞数-1
         else {
-            if (likeCommentForm.getIsLike() == LikeEnum.NOT_LIKE.getCode()){
+            if (likeCommentForm.getIsLike().equals(LikeEnum.NOT_LIKE.getCode())){
                 redisTemplate.opsForHash().increment("Comment" + commentId, "commentLikeNum", -1);
             }
         }
         // 6.设置点赞状态
         likeComment.setIsLike(likeCommentForm.getIsLike());
         // 7.将点赞信息存入redis
-//        redisTemplate.opsForValue().set("LikeComment::" + commentId + '-' + userId, likeComment, 1, TimeUnit.HOURS);
+        redisTemplate.opsForValue().set("LikeComment::" + commentId + '-' + userId, likeComment, 1, TimeUnit.HOURS);
         return likeComment;
     }
 
@@ -191,8 +197,8 @@ public class LikeServiceImpl implements LikeService {
         // 2.保存数据到数据库并清除redis中数据
         for (String likeArticleKey : likeArticleKeys){
             LikeArticle likeArticle = (LikeArticle) redisTemplate.opsForValue().get(likeArticleKey);
-            likeArticle = likeArticleRepository.save(likeArticle);
-            redisTemplate.opsForValue().set(likeArticleKey, likeArticle);
+            likeArticleRepository.save(likeArticle);
+//            redisTemplate.opsForValue().set(likeArticleKey, likeArticle, 1, TimeUnit.HOURS);
 //            redisTemplate.delete(likeArticleKey);
         }
         return;
@@ -208,8 +214,8 @@ public class LikeServiceImpl implements LikeService {
         // 2.保存数据到数据库并清除redis中数据
         for (String likeCommentKey : likeCommentKeys){
             LikeComment likeComment = (LikeComment) redisTemplate.opsForValue().get(likeCommentKey);
-            likeComment = likeCommentRepository.save(likeComment);
-            redisTemplate.opsForValue().set(likeCommentKey, likeComment);
+            likeCommentRepository.save(likeComment);
+//            redisTemplate.opsForValue().set(likeCommentKey, likeComment, 1, TimeUnit.HOURS);
 //            redisTemplate.delete(likeCommentKey);
         }
         return;

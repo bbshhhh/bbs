@@ -1,6 +1,5 @@
 package com.ccnu.bbs.repository;
 
-
 import com.ccnu.bbs.entity.Reply;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

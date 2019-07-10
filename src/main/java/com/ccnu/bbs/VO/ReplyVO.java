@@ -2,8 +2,6 @@ package com.ccnu.bbs.VO;
 
 import lombok.Data;
 
-import java.util.Date;
-
 @Data
 public class ReplyVO {
 

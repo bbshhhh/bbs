@@ -16,24 +16,6 @@ import java.util.Map;
 
 public class EntityUtils {
 
-    static {
-
-        ConvertUtils.register(new LongConverter(null), Long.class);
-        ConvertUtils.register(new ByteConverter(null), Byte.class);
-        ConvertUtils.register(new IntegerConverter(null), Integer.class);
-        ConvertUtils.register(new DoubleConverter(null), Double.class);
-        ConvertUtils.register(new ShortConverter(null), Short.class);
-        ConvertUtils.register(new FloatConverter(null), Float.class);
-        ConvertUtils.register(new Converter() {
-            public Object convert(Class type, Object value) {
-                if (value == null) {
-                    return null;
-                }
-                return new Date(Long.valueOf((String) value));
-            }
-        }, Date.class);
-    }
-
     public static Map<String, String> objectToHash(Object obj) {
         try {
             Map<String, String> map = new HashMap();
@@ -62,6 +44,22 @@ public class EntityUtils {
     }
 
     public static <T> T hashToObject(Map<?, ?> map, Class t) {
+        // 转换注册器
+        ConvertUtils.register(new LongConverter(null), Long.class);
+        ConvertUtils.register(new ByteConverter(null), Byte.class);
+        ConvertUtils.register(new IntegerConverter(null), Integer.class);
+        ConvertUtils.register(new DoubleConverter(null), Double.class);
+        ConvertUtils.register(new ShortConverter(null), Short.class);
+        ConvertUtils.register(new FloatConverter(null), Float.class);
+        ConvertUtils.register(new Converter() {
+            public Object convert(Class type, Object value) {
+                if (value == null) {
+                    return null;
+                }
+                return new Date(Long.valueOf((String) value));
+            }
+        }, Date.class);
+
         try {
             Object o = t.newInstance();
             BeanUtils.populate(o, (Map) map);

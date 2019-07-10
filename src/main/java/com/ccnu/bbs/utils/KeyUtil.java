@@ -2,7 +2,6 @@ package com.ccnu.bbs.utils;
 
 import org.apache.commons.codec.digest.DigestUtils;
 
-import java.util.Random;
 import java.util.UUID;
 
 public class KeyUtil {

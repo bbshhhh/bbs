@@ -84,7 +84,7 @@ public class MessageServiceImpl implements MessageService {
         // 获得时间
         messageVO.setMessageTime(Date2StringConverter.convert(message.getMessageTime()));
         // 若为未读消息,将消息设为已读,存入数据库
-        if (message.getIsRead() == MessageStatusEnum.NOT_READ.getCode()){
+        if (message.getIsRead().equals(MessageStatusEnum.NOT_READ.getCode())){
             message.setIsRead(MessageStatusEnum.READ.getCode());
             messageRepository.save(message);
         }

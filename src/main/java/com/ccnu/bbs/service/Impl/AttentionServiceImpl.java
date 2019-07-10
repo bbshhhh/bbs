@@ -35,6 +35,7 @@ public class AttentionServiceImpl implements AttentionService {
             attention = attentionRepository.findAttention(attentionUserId, attentionFollowerId);
         }
         if (attention != null){
+            redisTemplate.opsForValue().set("Attention::" + attentionUserId + '-' + attentionFollowerId, attention, 1, TimeUnit.HOURS);
             return attention.getIsAttention();
         }
         return AttentionEnum.NOT_ATTENTION.getCode();
@@ -62,15 +63,15 @@ public class AttentionServiceImpl implements AttentionService {
         User attentionUser = userService.getUser(attentionUserId);
         User attentionFollower = userService.getUser(attentionFollowerId);
         // 如果关注信息信息为空或者为未关注且要更新的关注信息为已关注，则用户粉丝数+1，关注数+1
-        if (attention.getIsAttention() == null || attention.getIsAttention() == AttentionEnum.NOT_ATTENTION.getCode()){
-            if (attentionForm.getIsAttention() == AttentionEnum.ATTENTION.getCode()){
+        if (attention.getIsAttention() == null || attention.getIsAttention().equals(AttentionEnum.NOT_ATTENTION.getCode())){
+            if (attentionForm.getIsAttention().equals(AttentionEnum.ATTENTION.getCode())){
                 attentionUser.setUserFansNum(attentionUser.getUserFansNum() + 1);
                 attentionFollower.setUserAttentionNum(attentionFollower.getUserAttentionNum() + 1);
             }
         }
-        // 如果关注信息为已关注且要更新的关注信息为未关注，则用户粉丝数-1，关注数+1
+        // 如果关注信息为已关注且要更新的关注信息为未关注，则用户粉丝数-1，关注数-1
         else {
-            if (attentionForm.getIsAttention() == AttentionEnum.NOT_ATTENTION.getCode()){
+            if (attentionForm.getIsAttention().equals(AttentionEnum.NOT_ATTENTION.getCode())){
                 attentionUser.setUserFansNum(attentionUser.getUserFansNum() - 1);
                 attentionFollower.setUserAttentionNum(attentionFollower.getUserAttentionNum() - 1);
             }
@@ -92,7 +93,7 @@ public class AttentionServiceImpl implements AttentionService {
         for (String attentionKey : attentionKeys){
             Attention attention = (Attention) redisTemplate.opsForValue().get(attentionKey);
             attention = attentionRepository.save(attention);
-            redisTemplate.opsForValue().set(attentionKey, attention);
+//            redisTemplate.opsForValue().set(attentionKey, attention);
 //            redisTemplate.delete(attentionKey);
         }
         return;

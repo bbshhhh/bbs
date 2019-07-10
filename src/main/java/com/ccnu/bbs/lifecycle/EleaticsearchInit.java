@@ -3,7 +3,6 @@ package com.ccnu.bbs.lifecycle;
 import com.ccnu.bbs.entity.Article;
 import com.ccnu.bbs.repository.ArticleRepository;
 import com.ccnu.bbs.searchRepository.ArticleSearchRepository;
-import com.ccnu.bbs.service.Impl.ArticleServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;

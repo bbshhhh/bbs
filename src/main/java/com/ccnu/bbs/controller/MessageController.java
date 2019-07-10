@@ -1,6 +1,5 @@
 package com.ccnu.bbs.controller;
 
-
 import com.ccnu.bbs.VO.MessageVO;
 import com.ccnu.bbs.VO.ResultVO;
 import com.ccnu.bbs.enums.MessageEnum;

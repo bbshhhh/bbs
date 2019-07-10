@@ -1,6 +1,5 @@
 package com.ccnu.bbs.enums;
 
-
 import lombok.Getter;
 
 @Getter

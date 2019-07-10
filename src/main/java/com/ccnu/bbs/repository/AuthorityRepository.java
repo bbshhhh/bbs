@@ -1,6 +1,5 @@
 package com.ccnu.bbs.repository;
 
-
 import com.ccnu.bbs.entity.Authority;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

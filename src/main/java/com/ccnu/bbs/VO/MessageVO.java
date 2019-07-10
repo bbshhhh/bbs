@@ -1,10 +1,8 @@
 package com.ccnu.bbs.VO;
 
 import lombok.Data;
-import org.springframework.data.annotation.CreatedDate;
 
 import java.math.BigInteger;
-import java.util.Date;
 
 @Data
 public class MessageVO {

@@ -9,7 +9,6 @@ import com.ccnu.bbs.entity.User;
 import com.ccnu.bbs.enums.ResultEnum;
 import com.ccnu.bbs.enums.RoleEnum;
 import com.ccnu.bbs.exception.BBSException;
-import com.ccnu.bbs.forms.UserInfoForm;
 import com.ccnu.bbs.forms.UserModifyForm;
 import com.ccnu.bbs.repository.DepartmentRepository;
 import com.ccnu.bbs.repository.UserRepository;
@@ -24,7 +23,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
