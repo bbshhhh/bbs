@@ -12,7 +12,7 @@ public class Date2StringConverter {
 
     public static String convert(Date date){
         String time;
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy年MM月dd日");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yy-MM-dd");
         SimpleDateFormat dateFormatToday = new SimpleDateFormat("HH:mm");
         if (date.before(getBeginDayOfYesterday())){
             time = dateFormat.format(date);

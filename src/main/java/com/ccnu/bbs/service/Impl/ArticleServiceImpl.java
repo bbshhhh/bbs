@@ -302,7 +302,7 @@ public class ArticleServiceImpl implements ArticleService {
             article = articleRepository.save(article);
             articleSearchRepository.save(article);
             redisTemplate.opsForHash().putAll(articleKey, EntityUtils.objectToHash(article));
-            redisTemplate.expire(articleKey, redisTemplate.getExpire(articleKey), TimeUnit.HOURS);
+            redisTemplate.expire(articleKey, redisTemplate.getExpire(articleKey), TimeUnit.SECONDS);
 //            redisTemplate.delete(articleKey);
         }
         return;

@@ -93,7 +93,8 @@ public class AttentionServiceImpl implements AttentionService {
         for (String attentionKey : attentionKeys){
             Attention attention = (Attention) redisTemplate.opsForValue().get(attentionKey);
             attention = attentionRepository.save(attention);
-//            redisTemplate.opsForValue().set(attentionKey, attention);
+            // 注意redis中的数据没有主键，必须存一次数据库有了主键后再存redis
+            redisTemplate.opsForValue().set(attentionKey, attention, redisTemplate.getExpire(attentionKey), TimeUnit.SECONDS);
 //            redisTemplate.delete(attentionKey);
         }
         return;

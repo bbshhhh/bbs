@@ -170,13 +170,13 @@ public class LikeServiceImpl implements LikeService {
         // 如果点赞信息为空或者为未点赞且要更新的点赞信息为已点赞，则评论点赞数+1
         if (likeComment.getIsLike() == null || likeComment.getIsLike().equals(LikeEnum.NOT_LIKE.getCode())){
             if (likeCommentForm.getIsLike() == LikeEnum.LIKE.getCode()){
-                redisTemplate.opsForHash().increment("Comment" + commentId, "commentLikeNum", 1);
+                redisTemplate.opsForHash().increment("Comment::" + commentId, "commentLikeNum", 1);
             }
         }
         // 如果点赞信息为已点赞且要更新的点赞信息为未点赞，则帖子点赞数-1
         else {
             if (likeCommentForm.getIsLike().equals(LikeEnum.NOT_LIKE.getCode())){
-                redisTemplate.opsForHash().increment("Comment" + commentId, "commentLikeNum", -1);
+                redisTemplate.opsForHash().increment("Comment::" + commentId, "commentLikeNum", -1);
             }
         }
         // 6.设置点赞状态
@@ -197,8 +197,9 @@ public class LikeServiceImpl implements LikeService {
         // 2.保存数据到数据库并清除redis中数据
         for (String likeArticleKey : likeArticleKeys){
             LikeArticle likeArticle = (LikeArticle) redisTemplate.opsForValue().get(likeArticleKey);
-            likeArticleRepository.save(likeArticle);
-//            redisTemplate.opsForValue().set(likeArticleKey, likeArticle, 1, TimeUnit.HOURS);
+            likeArticle = likeArticleRepository.save(likeArticle);
+            // 注意redis中的数据没有主键，必须存一次数据库有了主键后再存redis
+            redisTemplate.opsForValue().set(likeArticleKey, likeArticle, redisTemplate.getExpire(likeArticleKey), TimeUnit.SECONDS);
 //            redisTemplate.delete(likeArticleKey);
         }
         return;
@@ -214,8 +215,9 @@ public class LikeServiceImpl implements LikeService {
         // 2.保存数据到数据库并清除redis中数据
         for (String likeCommentKey : likeCommentKeys){
             LikeComment likeComment = (LikeComment) redisTemplate.opsForValue().get(likeCommentKey);
-            likeCommentRepository.save(likeComment);
-//            redisTemplate.opsForValue().set(likeCommentKey, likeComment, 1, TimeUnit.HOURS);
+            likeComment = likeCommentRepository.save(likeComment);
+            // 注意redis中的数据没有主键，必须存一次数据库有了主键后再存redis
+            redisTemplate.opsForValue().set(likeCommentKey, likeComment, redisTemplate.getExpire(likeCommentKey), TimeUnit.SECONDS);
 //            redisTemplate.delete(likeCommentKey);
         }
         return;
