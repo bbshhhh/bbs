@@ -256,6 +256,10 @@ public class ArticleServiceImpl implements ArticleService {
         articleRepository.save(article);
         articleSearchRepository.save(article);
         redisTemplate.delete("Article::" + articleId);
+        // 4.用户帖子数-1
+        User user = userService.findUser(article.getArticleUserId());
+        user.setUserArticleNum(user.getUserArticleNum() - 1);
+        userService.saveUser(user);
     }
 
     @Override
