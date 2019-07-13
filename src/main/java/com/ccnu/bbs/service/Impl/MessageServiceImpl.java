@@ -79,6 +79,7 @@ public class MessageServiceImpl implements MessageService {
         BeanUtils.copyProperties(message, messageVO);
         // 获得消息发送者的昵称、头像
         User user = userService.findUser(message.getSenderUserId());
+        messageVO.setSenderUserId(user.getUserId());
         messageVO.setSenderUserName(user.getUserName());
         messageVO.setSenderUserImg(user.getUserImg());
         // 获得时间

@@ -13,6 +13,8 @@ public class MessageVO {
     private String articleId;
     /** 消息对应评论id. */
     private String commentId;
+    /** 消息发送者id. */
+    private String senderUserId;
     /** 消息发送者昵称. */
     private String senderUserName;
     /** 消息发送者头像. */
