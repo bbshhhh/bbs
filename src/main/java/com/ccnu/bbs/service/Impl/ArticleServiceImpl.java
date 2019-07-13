@@ -176,7 +176,7 @@ public class ArticleServiceImpl implements ArticleService {
         updateArticleDatabase();
         // 9.将用户发帖数+1
         User user = userService.findUser(userId);
-        user.setUserArticleNum(user.getUserAttentionNum() + 1);
+        user.setUserArticleNum(user.getUserArticleNum() + 1);
         userService.saveUser(user);
         return article;
     }
