@@ -111,7 +111,7 @@ public class CommentServiceImpl implements CommentService {
             message.setMessageType(MessageEnum.REPLY_MESSAGE.getCode());
             message.setReceiverUserId(article.getArticleUserId());
             message.setSenderUserId(userId);
-            message.setRepliedContent(article.getArticleContent());
+            message.setRepliedContent(article.getArticleTitle());
             message.setMessageContent(comment.getCommentContent());
             messageService.createMessage(message);
         }
