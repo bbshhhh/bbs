@@ -68,9 +68,9 @@ public class ArticleServiceImpl implements ArticleService {
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
-    private static final Double VIEW_NUM_WEIGHT = 100.0;
+    private static final Double VIEW_NUM_WEIGHT = 1.0;
     private static final Double COMMENT_NUM_WEIGHT = 200.0;
-    private static final Double LIKE_NUM_WEIGHT = 300.0;
+    private static final Double LIKE_NUM_WEIGHT = 200.0;
     private static final Double INIT_VALUE =  100.0;
 
     @Override
