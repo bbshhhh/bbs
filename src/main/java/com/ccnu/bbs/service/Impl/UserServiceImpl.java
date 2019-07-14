@@ -113,7 +113,9 @@ public class UserServiceImpl implements UserService {
         UserInfoVO userInfoVO = new UserInfoVO();
         Department department = departmentRepository.findUserDepartment(user.getUserDepartment());
         BeanUtils.copyProperties(user, userInfoVO);
-        userInfoVO.setUserDepartment(department.getDepartmentName());
+        if (department != null){
+            userInfoVO.setUserDepartment(department.getDepartmentName());
+        }
         return userInfoVO;
     }
 
