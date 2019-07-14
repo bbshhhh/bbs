@@ -28,7 +28,7 @@ public class User implements Serializable {
     /** 用户性别. */
     private Integer userGender;
     /** 用户所在学院. */
-    private Integer userDepartment;
+    private Integer userDepartment = 0;
     /** 用户经验. */
     private String userEx = "0";
     /** 用户情感状态. */
