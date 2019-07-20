@@ -253,9 +253,9 @@ public class ArticleServiceImpl implements ArticleService {
         // 2.将删除位置为1
         article.setArticleIsDelete(DeleteEnum.DELETE.getCode());
         // 3.更新数据库及es并删除缓存
+        redisTemplate.delete("Article::" + articleId);
         articleRepository.save(article);
         articleSearchRepository.save(article);
-        redisTemplate.delete("Article::" + articleId);
         // 4.用户帖子数-1
         User user = userService.findUser(article.getArticleUserId());
         user.setUserArticleNum(user.getUserArticleNum() - 1);
